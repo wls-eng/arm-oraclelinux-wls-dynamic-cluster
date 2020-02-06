@@ -31,7 +31,7 @@
     <parent>
         <groupId>com.microsoft.azure.iaas</groupId>
         <artifactId>azure-javaee-iaas-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <relativePath></relativePath>
     </parent>
 
@@ -41,6 +41,7 @@
     <properties>
       <template.validation.tests.directory>${basedir}/../../azure-quickstart-templates/test/arm-ttk</template.validation.tests.directory>
       <test.args>-Test deploymentTemplate</test.args>
+      <test.parameters>-TestParameter '@{&quot;SampleName&quot;=&quot;addnode/src/main/scripts&quot;;&quot;RawRepoPath&quot;=&quot;${artifactsLocationBase}/arm-oraclelinux-wls-cluster/${git.tag}/addnode/src/main/scripts/&quot;}'</test.parameters>
     </properties>
 
     <description>
