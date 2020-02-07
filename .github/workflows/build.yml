@@ -65,7 +65,7 @@ jobs:
           path: ${{steps.artifact_path.outputs.artifactPath}}
 
       - name: Get version information from addnode/pom.xml
-        id: version
+        id: addnode_version
         run: echo "##[set-env name=addnode_version;]$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode/pom.xml)"
       - name: Print addnode template version
         run: echo $addnode_version 
@@ -90,5 +90,5 @@ jobs:
         uses: actions/upload-artifact@v1 
         if: success()
         with:
-          name: ${{steps.addnode_artifact_file.outputs.addnode_artifactName}}.
+          name: ${{steps.addnode_artifact_file.outputs.addnode_artifactName}}
           path: ${{steps.addnode_artifact_file.outputs.addnode_artifactPath}}
