@@ -82,7 +82,7 @@ jobs:
       - name: Output addnode template artifact path
         run: echo $addnode_artifactPath
         env: 
-          artifactPath: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
+          $addnode_artifactPath: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
       - name: Unzip the package as upload action will zip again 
         run: unzip arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName.zip -d arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName
 
@@ -91,4 +91,4 @@ jobs:
         if: success()
         with:
           name: ${{steps.addnode_artifact_file.outputs.addnode_artifactName}}
-          path: ${{steps.addnode_artifact_file.outputs.addnode_artifactPath}}
+          path: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
