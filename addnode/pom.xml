@@ -39,7 +39,7 @@
     <name>${project.artifactId}</name>
 
     <properties>
-      <template.validation.tests.directory>${basedir}/../../azure-quickstart-templates/test/arm-ttk</template.validation.tests.directory>
+      <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
       <test.args>-Test deploymentTemplate</test.args>
       <test.parameters>-TestParameter '@{&quot;SampleName&quot;=&quot;addnode/src/main/scripts&quot;;&quot;RawRepoPath&quot;=&quot;${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/&quot;}'</test.parameters>
     </properties>
