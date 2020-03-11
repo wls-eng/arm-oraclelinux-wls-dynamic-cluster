@@ -40,8 +40,8 @@
 
     <properties>
       <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
-      <test.args>-Test deploymentTemplate</test.args>
       <test.parameters>-TestParameter '@{&quot;SampleName&quot;=&quot;addnode/src/main/scripts&quot;;&quot;RawRepoPath&quot;=&quot;${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/&quot;}'</test.parameters>
+        <tracking.pid>pid-2525d3a2-c5a4-503d-be8e-fc680736950</tracking.pid>
     </properties>
 
     <description>

@@ -1,5 +1,5 @@
 {
-   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
    "contentVersion": "1.0.0.0",
    "parameters": {
       "_artifactsLocation": {
@@ -7,7 +7,7 @@
          "metadata": {
             "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
          },
-         "defaultValue": "${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/addnode/src/main/scripts/"
+         "defaultValue": "[deployment().properties.templateLink.uri]"
       },
       "_artifactsLocationSasToken": {
          "type": "securestring",
@@ -22,7 +22,6 @@
             "description": "User name for the Virtual Machine."
          }
       },
-
       "authenticationType": {
          "type": "string",
          "defaultValue": "password",
@@ -46,6 +45,15 @@
             "description": "Do you agree to provide OTN credentials to accept OTN License Agreement? Enter Y or y to agree, else N or n"
          }
       },
+      "numberOfNodes": {
+         "type": "int",
+         "defaultValue": 1,
+         "minValue": 1,
+         "maxValue": 60,
+         "metadata": {
+            "description": "The number of nodes to add."
+         }
+      },
       "otnAccountUsername": {
          "type": "string",
          "metadata": {
@@ -61,25 +69,31 @@
       "wlsDomainName": {
          "type": "string",
          "metadata": {
-            "description": "Provide Weblogic domain name"
-         }
-      },
-      "wlsAdminURL": {
-         "type": "string",
-         "metadata": {
-            "description": "Administrator URL for the Weblogic domain to which the Node has to be added"
+            "description": "Provide existing running Weblogic domain name"
          }
       },
       "wlsUserName": {
          "type": "string",
          "metadata": {
-            "description": "Username for your Weblogic domain"
+            "description": "Username for your Weblogic domain name"
          }
       },
       "wlsPassword": {
+         "type": "securestring",
+         "metadata": {
+            "description": "Password for your Weblogic domain name"
+         }
+      },
+      "managedServerPrefix": {
          "type": "string",
          "metadata": {
-            "description": "Password for your Weblogic domain"
+            "description": "Provide managed server prefix"
+         }
+      },
+      "adminURL": {
+         "type": "string",
+         "metadata": {
+            "description": "Provide admin URL with vm0_publicip:7001"
          }
       },
       "dnsLabelPrefix": {
@@ -87,6 +101,14 @@
          "metadata": {
             "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
          }
+      },
+      "guidValue": {
+         "type": "string",
+         "defaultValue": "[newGuid()]"
+      },
+      "guidValueShort": {
+         "type": "string",
+         "defaultValue": "[take(replace(parameters('guidValue'),'-',''),6)]"
       },
       "linuxOSVersion": {
          "type": "string",
@@ -97,12 +119,6 @@
          ],
          "metadata": {
             "description": "The Oracle Linux version for the VM. This will pick a fully patched image of this given Oracle Linux version."
-         }
-      },
-      "vmName": {
-         "type": "string",
-         "metadata": {
-            "description": "Virtual Machine (VM) Name"
          }
       },
       "location": {
@@ -127,18 +143,18 @@
       }
    },
    "variables": {
-      "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'olvm')]",
       "imagePublisher": "Oracle",
       "imageOffer": "Oracle-Linux",
-      "nicName": "[concat(parameters('vmName'),'_NIC')]",
-      "addressPrefix": "10.0.0.0/16",
+      "nicName": "_NIC",
+      "storageAccountName": "[concat('storage',uniquestring(resourceGroup().id))]",
       "subnetName": "Subnet",
-      "subnetPrefix": "10.0.0.0/24",
       "storageAccountType": "Standard_LRS",
-      "publicIPAddressName": "[concat(parameters('vmName'),'_PublicIP')]",
+      "vmName": "[concat(parameters('managedServerPrefix'),parameters('guidValueShort'))]",
+      "publicIPAddressName": "[concat(variables('vmName'),'_PublicIP')]",
       "publicIPAddressType": "Dynamic",
       "vmSize": "[parameters('vmSizeSelect')]",
-      "virtualNetworkName": "olvmVNET",
+      "virtualNetworkName": "[concat(parameters('wlsDomainName'),'_VNET')]",
+      "oradownScript": "oradown.sh",
       "ScriptFileName": "addNodeToDynamicCluster.sh",
       "linuxConfiguration": {
          "disablePasswordAuthentication": true,
@@ -155,8 +171,22 @@
    },
    "resources": [
       {
+         "apiVersion": "2019-10-01",
+         "name": "${tracking.pid}",
+         "type": "Microsoft.Resources/deployments",
+         "properties": {
+            "mode": "Incremental",
+            "template": {
+               "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "contentVersion": "1.0.0.0",
+               "resources": [
+               ]
+            }
+         }
+      },
+      {
          "type": "Microsoft.Storage/storageAccounts",
-         "apiVersion": "2018-11-01",
+         "apiVersion": "2019-06-01",
          "name": "[variables('storageAccountName')]",
          "location": "[parameters('location')]",
          "sku": {
@@ -164,59 +194,50 @@
          },
          "kind": "Storage",
          "properties": {
-
          }
       },
       {
          "type": "Microsoft.Network/publicIPAddresses",
-         "apiVersion": "2018-11-01",
-         "name": "[variables('publicIPAddressName')]",
+         "apiVersion": "2020-03-01",
+         "name": "[concat(variables('publicIPAddressName'), copyIndex(1))]",
          "location": "[parameters('location')]",
+         "copy": {
+            "name": "publicIPLoop",
+            "count": "[parameters('numberOfNodes')]"
+         },
          "properties": {
             "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
             "dnsSettings": {
-               "domainNameLabel": "[concat(toLower(parameters('dnsLabelPrefix')),'-',toLower(resourceGroup().name),'-',toLower(parameters('wlsDomainName')))]"
+               "domainNameLabel": "[concat(toLower(parameters('dnsLabelPrefix')),'-',toLower(variables('vmName')),'-',toLower(parameters('wlsDomainName')), copyIndex(1))]"
             }
          }
       },
       {
-         "type": "Microsoft.Network/virtualNetworks",
-         "apiVersion": "2018-11-01",
-         "name": "[variables('virtualNetworkName')]",
-         "location": "[parameters('location')]",
-         "properties": {
-            "addressSpace": {
-               "addressPrefixes": [
-                  "[variables('addressPrefix')]"
-               ]
-            },
-            "subnets": [
-               {
-                  "name": "[variables('subnetName')]",
-                  "properties": {
-                     "addressPrefix": "[variables('subnetPrefix')]"
-                  }
-               }
-            ]
-         }
+         "type": "Microsoft.Network/virtualNetworks/subnets",
+         "apiVersion": "2020-03-01",
+         "name": "[concat(variables('virtualNetworkName'), '/', variables('subnetName'))]",
+         "condition": "[and(empty(variables('virtualNetworkName')), empty(variables('subnetName')))]"
       },
       {
          "type": "Microsoft.Network/networkInterfaces",
-         "apiVersion": "2018-11-01",
-         "name": "[variables('nicName')]",
+         "apiVersion": "2020-03-01",
+         "name": "[concat(variables('vmName'),variables('nicName'), copyIndex(1))]",
          "location": "[parameters('location')]",
+         "copy": {
+            "name": "nicLoop",
+            "count": "[parameters('numberOfNodes')]"
+         },
          "dependsOn": [
-            "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-            "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+            "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('publicIPAddressName'), copyIndex(1)))]"
          ],
          "properties": {
             "ipConfigurations": [
                {
-                  "name": "[concat('ipconfig_',parameters('vmName'))]",
+                  "name": "ipconfig1",
                   "properties": {
                      "privateIPAllocationMethod": "Dynamic",
                      "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),copyIndex(1)))]"
                      },
                      "subnet": {
                         "id": "[variables('subnetRef')]"
@@ -228,19 +249,23 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines",
-         "apiVersion": "2018-10-01",
-         "name": "[parameters('vmName')]",
+         "apiVersion": "2019-12-01",
+         "name": "[concat(variables('vmName'), copyIndex(1))]",
          "location": "[parameters('location')]",
+         "copy": {
+            "name": "virtualMachineLoop",
+            "count": "[parameters('numberOfNodes')]"
+         },
          "dependsOn": [
             "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-            "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('vmName'),variables('nicName'),copyIndex(1)))]"
          ],
          "properties": {
             "hardwareProfile": {
                "vmSize": "[variables('vmSize')]"
             },
             "osProfile": {
-               "computerName": "[parameters('vmName')]",
+               "computerName": "[concat(variables('vmName'), copyIndex(1))]",
                "adminUsername": "[parameters('adminUsername')]",
                "adminPassword": "[parameters('adminPasswordOrKey')]",
                "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
@@ -266,7 +291,7 @@
             "networkProfile": {
                "networkInterfaces": [
                   {
-                     "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                     "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmName'),variables('nicName'), copyIndex(1)))]"
                   }
                ]
             },
@@ -280,11 +305,15 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
-         "name": "[concat(parameters('vmName'),'/newuserscript')]",
-         "apiVersion": "2019-07-01",
+         "name": "[concat(variables('vmName'), copyIndex(1), '/newuserscript')]",
+         "apiVersion": "2019-12-01",
          "location": "[parameters('location')]",
+         "copy": {
+            "name": "virtualMachineExtensionLoop",
+            "count": "[parameters('numberOfNodes')]"
+         },
          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            "[resourceId('Microsoft.Compute/virtualMachines/', concat(variables('vmName'),copyIndex(1)))]"
          ],
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
@@ -293,9 +322,10 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
                "fileUris": [
-                  "[uri(parameters('_artifactsLocation'), concat(variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]"
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]",
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('oradownScript'), parameters('_artifactsLocationSasToken')))]"
                ],
-               "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsAdminURL'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'))]"
+               "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('vmName'),copyIndex(1),' ',variables('vmName'),' ', parameters('adminURL'))]"
             }
          }
       }
