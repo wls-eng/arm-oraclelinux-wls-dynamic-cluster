@@ -165,7 +165,7 @@
         "outputAdminHostName": "[concat(parameters('adminVMName'),variables('publicIPAddressName'))]",
         "publicIPAddressType": "Dynamic",
         "vmSize": "[parameters('vmSizeSelect')]",
-        "virtualNetworkName": "olvmVNET",
+        "virtualNetworkName": "[concat(parameters('wlsDomainName'),'_VNET')]",
         "oradownScript": "oradown.sh",
         "ScriptFileName": "setupDynamicClusterDomain.sh",
         "linuxConfiguration": {
