@@ -693,7 +693,6 @@ export wlsSSLAdminPort=7002
 export wlsManagedPort=8001
 export wlsClusterName="cluster1"
 export dynamicServerTemplate="myServerTemplate"
-export nmHost=`hostname`
 export machineNamePrefix="machine"
 export machineName="$machineNamePrefix-$nmHost"
 export WLS_VER="12.2.1.3.0"

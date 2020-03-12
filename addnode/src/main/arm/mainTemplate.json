@@ -321,11 +321,11 @@
             "typeHandlerVersion": "2.0",
             "autoUpgradeMinorVersion": true,
             "settings": {
-               "fileUris": [
-                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]",
-                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('oradownScript'), parameters('_artifactsLocationSasToken')))]"
-               ],
-               "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('vmName'),copyIndex(1),' ',variables('vmName'),' ', parameters('adminURL'))]"
+                    "fileUris": [
+                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('oradownScript'), parameters('_artifactsLocationSasToken')))]"
+                    ],
+                    "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('adminURL'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'))]"
             }
          }
       }
