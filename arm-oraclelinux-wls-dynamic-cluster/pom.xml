@@ -39,8 +39,7 @@
     <name>${project.artifactId}</name>
 
     <properties>
-      <!--      <tracking.pid>pid-3031eeaf-f67e-5f61-8bf1-aad6006eaf6d</tracking.pid> -->
-      <tracking.pid>pid-b00813e7-8cdf-5f97-9d76-2590c3a27261</tracking.pid>
+      <tracking.pid>pid-9697621e-54df-51da-8169-ffcb58cb0a0c</tracking.pid>
       <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
     </properties>
     
