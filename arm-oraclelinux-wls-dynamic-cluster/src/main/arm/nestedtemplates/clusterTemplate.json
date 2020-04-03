@@ -187,7 +187,7 @@
     "resources": [
         {
             "apiVersion": "2019-10-01",
-            "name": "${dynamic.cluster.start}",
+            "name": "pid-9697621e-54df-51da-8169-ffcb58cb0a0c",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -390,7 +390,7 @@
         },
         {
             "apiVersion": "2019-10-01",
-            "name": "${dynamic.cluster.end}",
+            "name": "pid-eedac070-39c0-5947-a4d7-cfc864417b49",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
