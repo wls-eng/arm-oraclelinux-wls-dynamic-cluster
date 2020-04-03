@@ -16,14 +16,29 @@
             },
             "defaultValue": ""
         },
-        "guidValue": {
+        "acceptOTNLicenseAgreement": {
             "type": "string",
-            "defaultValue": "[newGuid()]"
+            "metadata": {
+                "description": "Do you agree to provide OTN credentials to accept OTN License Agreement? Enter Y or y to agree, else N or n"
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
         },
         "adminUsername": {
             "type": "string",
             "metadata": {
                 "description": "User name for the Virtual Machine."
+            }
+        },
+        "adminVMName": {
+            "type": "string",
+            "defaultValue": "adminVM",
+            "metadata": {
+                "description": "Admin Server hosting VM name."
             }
         },
         "authenticationType": {
@@ -37,73 +52,10 @@
                 "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
             }
         },
-        "adminPasswordOrKey": {
-            "type": "securestring",
-            "metadata": {
-                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
-            }
-        },
-        "acceptOTNLicenseAgreement": {
+        "dnsLabelPrefix": {
             "type": "string",
             "metadata": {
-                "description": "Do you agree to provide OTN credentials to accept OTN License Agreement? Enter Y or y to agree, else N or n"
-            }
-        },
-        "otnAccountUsername": {
-            "type": "string",
-            "metadata": {
-                "description": "Username for your Oracle Technology Network account"
-            }
-        },
-        "otnAccountPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for your Oracle Technology Network account"
-            }
-        },
-        "portsToExpose": {
-            "type": "string",
-            "defaultValue": "80,443,7001-9000",
-            "metadata": {
-                "description": "Ports and port ranges to expose"
-            }
-        },
-        "wlsDomainName": {
-            "type": "string",
-            "metadata": {
-                "description": "Provide Weblogic domain name"
-            }
-        },
-        "wlsUserName": {
-            "type": "string",
-            "metadata": {
-                "description": "Username for your Weblogic domain name"
-            }
-        },
-        "wlsPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for your Weblogic domain name"
-            }
-        },
-        "adminVMName": {
-            "type": "string",
-            "defaultValue": "adminVM",
-            "metadata": {
-                "description": "Admin Server hosting VM name."
-            }
-        },
-        "managedServerPrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "Provide managed server prefix name"
-            }
-        },
-        "maxDynamicClusterSize": {
-            "type": "int",
-            "defaultValue": 10,
-            "metadata": {
-                "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
+                "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             }
         },
         "dynamicClusterSize": {
@@ -113,11 +65,9 @@
                 "description": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
             }
         },
-        "dnsLabelPrefix": {
+        "guidValue": {
             "type": "string",
-            "metadata": {
-                "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
-            }
+            "defaultValue": "[newGuid()]"
         },
         "linuxOSVersion": {
             "type": "string",
@@ -137,6 +87,38 @@
                 "description": "Location for all resources."
             }
         },
+        "managedServerPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Provide managed server prefix name"
+            }
+        },
+        "maxDynamicClusterSize": {
+            "type": "int",
+            "defaultValue": 10,
+            "metadata": {
+                "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
+            }
+        },
+        "otnAccountPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for your Oracle Technology Network account"
+            }
+        },
+        "otnAccountUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for your Oracle Technology Network account"
+            }
+        },
+        "portsToExpose": {
+            "type": "string",
+            "defaultValue": "80,443,7001-9000",
+            "metadata": {
+                "description": "Ports and port ranges to expose"
+            }
+        },
         "vmSizeSelect": {
             "type": "string",
             "defaultValue": "Standard_A3",
@@ -148,6 +130,24 @@
             ],
             "metadata": {
                 "description": "Select appropriate VM Size as per requirement (Standard_A1, Standard_A2, Standard_A3, Standard_A4)"
+            }
+        },
+        "wlsDomainName": {
+            "type": "string",
+            "metadata": {
+                "description": "Provide Weblogic domain name"
+            }
+        },
+        "wlsPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for your Weblogic domain name"
+            }
+        },
+        "wlsUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for your Weblogic domain name"
             }
         }
     },
@@ -187,7 +187,7 @@
     "resources": [
         {
             "apiVersion": "2019-10-01",
-            "name": "${tracking.pid}",
+            "name": "${dynamic.cluster.start}",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -387,7 +387,21 @@
                     "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('const_managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'))]"
                 }
             }
-        }
+        },
+        {
+            "apiVersion": "2019-10-01",
+            "name": "${dynamic.cluster.end}",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                    ]
+                }
+            }
+        }        
     ],
     "outputs": {
         "wlsDomainLocation": {
