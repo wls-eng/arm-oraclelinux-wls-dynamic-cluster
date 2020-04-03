@@ -152,23 +152,10 @@
         }
     },
     "variables": {
-        "storageAccountName": "[concat(take(replace(parameters('guidValue'),'-',''),6),'olvm')]",
-        "imagePublisher": "Oracle",
-        "imageOffer": "Oracle-Linux",
-        "nicName": "NIC",
-        "managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
-        "addressPrefix": "10.0.0.0/16",
-        "subnetName": "Subnet",
-        "subnetPrefix": "10.0.0.0/24",
-        "storageAccountType": "Standard_LRS",
-        "publicIPAddressName": "PublicIP",
-        "outputAdminHostName": "[concat(parameters('adminVMName'),variables('publicIPAddressName'))]",
-        "publicIPAddressType": "Dynamic",
-        "vmSize": "[parameters('vmSizeSelect')]",
-        "virtualNetworkName": "[concat(parameters('wlsDomainName'),'_VNET')]",
-        "oradownScript": "oradown.sh",
-        "ScriptFileName": "setupDynamicClusterDomain.sh",
-        "linuxConfiguration": {
+        "const_addressPrefix": "10.0.0.0/16",
+        "const_imageOffer": "Oracle-Linux",
+        "const_imagePublisher": "Oracle",
+        "const_linuxConfiguration": {
             "disablePasswordAuthentication": true,
             "ssh": {
                 "publicKeys": [
@@ -179,10 +166,23 @@
                 ]
             }
         },
-        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-        "networkSecurityGroupName": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
-        "networkSecurityGroupRef": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-        "requiredPortrange": ",65200-65535,5556"
+        "const_managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
+        "const_publicIPAddressType": "Dynamic",
+        "const_requiredPortrange": ",65200-65535,5556",
+        "const_storageAccountType": "Standard_LRS",
+        "const_subnetPrefix": "10.0.0.0/24",
+        "const_vmSize": "[parameters('vmSizeSelect')]",
+        "name_networkSecurityGroup": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
+        "name_nic": "NIC",
+        "name_oradownScript": "oradown.sh",
+        "name_outputAdminHost": "[concat(parameters('adminVMName'),variables('name_publicIPAddress'))]",
+        "name_publicIPAddress": "PublicIP",
+        "name_scriptFile": "setupDynamicClusterDomain.sh",
+        "name_storageAccount": "[concat(take(replace(parameters('guidValue'),'-',''),6),'olvm')]",
+        "name_subnet": "Subnet",
+        "name_virtualNetwork": "[concat(parameters('wlsDomainName'),'_VNET')]",
+        "ref_networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('name_networkSecurityGroup'))]",
+        "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]"
     },
     "resources": [
         {
@@ -202,7 +202,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2019-06-01",
-            "name": "[variables('networkSecurityGroupName')]",
+            "name": "[variables('name_networkSecurityGroup')]",
             "location": "[parameters('location')]",
             "properties": {
                 "securityRules": [
@@ -216,7 +216,7 @@
                             "access": "Allow",
                             "priority": 320,
                             "direction": "Inbound",
-                            "destinationPortRanges": "[split(concat(parameters('portsToExpose'),variables('requiredPortrange')), ',')]"
+                            "destinationPortRanges": "[split(concat(parameters('portsToExpose'),variables('const_requiredPortrange')), ',')]"
                         }
                     }
                 ]
@@ -225,10 +225,10 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
-            "name": "[variables('storageAccountName')]",
+            "name": "[variables('name_storageAccount')]",
             "location": "[parameters('location')]",
             "sku": {
-                "name": "[variables('storageAccountType')]"
+                "name": "[variables('const_storageAccountType')]"
             },
             "kind": "Storage",
             "properties": {
@@ -237,14 +237,14 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2018-11-01",
-            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('publicIPAddressName')),concat(variables('managedVMPrefix'), copyIndex(),variables('publicIPAddressName')))]",
+            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_publicIPAddress')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_publicIPAddress')))]",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "publicIPLoop",
                 "count": "[add(parameters('dynamicClusterSize'),1)]"
             },
             "properties": {
-                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "publicIPAllocationMethod": "[variables('const_publicIPAddressType')]",
                 "dnsSettings": {
                     "domainNameLabel": "[concat(toLower(parameters('dnsLabelPrefix')),copyindex(),'-',take(replace(parameters('guidValue'),'-',''),10),'-',toLower(parameters('wlsDomainName')))]"
                 }
@@ -253,24 +253,24 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2018-11-01",
-            "name": "[variables('virtualNetworkName')]",
+            "name": "[variables('name_virtualNetwork')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[variables('networkSecurityGroupRef')]"
+                "[variables('ref_networkSecurityGroup')]"
             ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[variables('addressPrefix')]"
+                        "[variables('const_addressPrefix')]"
                     ]
                 },
                 "subnets": [
                     {
-                        "name": "[variables('subnetName')]",
+                        "name": "[variables('name_subnet')]",
                         "properties": {
-                            "addressPrefix": "[variables('subnetPrefix')]",
+                            "addressPrefix": "[variables('const_subnetPrefix')]",
                             "networkSecurityGroup": {
-                                "id": "[variables('networkSecurityGroupRef')]"
+                                "id": "[variables('ref_networkSecurityGroup')]"
                             }
                         }
                     }
@@ -280,14 +280,14 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2018-11-01",
-            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('nicName')),concat(variables('managedVMPrefix'), copyIndex(),variables('nicName')))]",
+            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_nic')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_nic')))]",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "nicLoop",
                 "count": "[add(parameters('dynamicClusterSize'),1)]"
             },
             "dependsOn": [
-                "[variables('virtualNetworkName')]",
+                "[variables('name_virtualNetwork')]",
                 "publicIPLoop"
             ],
             "properties": {
@@ -297,10 +297,10 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('publicIPAddressName')),concat(variables('managedVMPrefix'), copyIndex(),variables('publicIPAddressName'))))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_publicIPAddress')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_publicIPAddress'))))]"
                             },
                             "subnet": {
-                                "id": "[variables('subnetRef')]"
+                                "id": "[variables('ref_subnet')]"
                             }
                         }
                     }
@@ -310,7 +310,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2018-10-01",
-            "name": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('managedVMPrefix'), copyIndex()))]",
+            "name": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('const_managedVMPrefix'), copyIndex()))]",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "virtualMachineLoop",
@@ -321,18 +321,18 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[variables('vmSize')]"
+                    "vmSize": "[variables('const_vmSize')]"
                 },
                 "osProfile": {
-                    "computerName": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('managedVMPrefix'), copyIndex()))]",
+                    "computerName": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('const_managedVMPrefix'), copyIndex()))]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
-                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('const_linuxConfiguration'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "[variables('imagePublisher')]",
-                        "offer": "[variables('imageOffer')]",
+                        "publisher": "[variables('const_imagePublisher')]",
+                        "offer": "[variables('const_imageOffer')]",
                         "sku": "[parameters('linuxOSVersion')]",
                         "version": "latest"
                     },
@@ -350,21 +350,21 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces',if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('nicName')),concat(variables('managedVMPrefix'), copyIndex(),variables('nicName'))))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_nic')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_nic'))))]"
                         }
                     ]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2019-06-01').primaryEndpoints.blob]"
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('name_storageAccount')), '2019-06-01').primaryEndpoints.blob]"
                     }
                 }
             }
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('managedVMPrefix'),copyIndex(),'/newuserscript'))]",
+            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'),copyIndex(),'/newuserscript'))]",
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "copy": {
@@ -381,10 +381,10 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('oradownScript'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_oradownScript'), parameters('_artifactsLocationSasToken')))]"
                     ],
-                    "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'))]"
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('const_managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'))]"
                 }
             }
         }
@@ -396,15 +396,15 @@
         },
         "adminHostName": {
             "type": "string",
-            "value": "[reference(variables('outputAdminHostName')).dnsSettings.fqdn]"
+            "value": "[reference(variables('name_outputAdminHost')).dnsSettings.fqdn]"
         },
         "adminConsole": {
             "type": "string",
-            "value": "[concat('http://',reference(concat(parameters('adminVMName'),variables('publicIPAddressName'))).dnsSettings.fqdn,':7001/console')]"
+            "value": "[concat('http://',reference(concat(parameters('adminVMName'),variables('name_publicIPAddress'))).dnsSettings.fqdn,':7001/console')]"
         },
         "adminSecuredConsole": {
             "type": "string",
-            "value": "[concat('https://',reference(concat(parameters('adminVMName'),variables('publicIPAddressName'))).dnsSettings.fqdn,':7002/console')]"
+            "value": "[concat('https://',reference(concat(parameters('adminVMName'),variables('name_publicIPAddress'))).dnsSettings.fqdn,':7002/console')]"
         }
     }
 }
