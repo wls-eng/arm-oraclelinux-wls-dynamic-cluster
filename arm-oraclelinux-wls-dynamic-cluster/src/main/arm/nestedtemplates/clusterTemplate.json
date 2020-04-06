@@ -6,8 +6,14 @@
             "type": "string",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
-            },
-            "defaultValue": "[deployment().properties.templateLink.uri]"
+            }
+        },
+        "_artifactsLocationClusterTemplate": {
+            "defaultValue": "[if(contains(parameters('_artifactsLocation'), 'githubusercontent'), parameters('_artifactsLocation'), deployment().properties.templateLink.uri)]",
+            "type": "string",
+            "metadata": {
+                "description": "If we are deploying from the command line, use the passed in _artifactsLocation, otherwise use the default."
+            }
         },
         "_artifactsLocationSasToken": {
             "type": "securestring",
@@ -381,8 +387,8 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_oradownScript'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('artifactsLocationClusterTemplate'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('artifactsLocationClusterTemplate'), concat('scripts/', variables('name_oradownScript'), parameters('_artifactsLocationSasToken')))]"
                     ],
                     "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('const_managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'))]"
                 }

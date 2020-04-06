@@ -144,7 +144,7 @@
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-10",
+            "apiVersion": "2019-10-01",
             "name": "clusterLinkedTemplate",
             "properties": {
                 "mode": "Incremental",
@@ -206,7 +206,7 @@
                     },
                     "wlsPassword": {
                         "value": "[parameters('wlsPassword')]"
-                    }
+                    },
                     "wlsUserName": {
                         "value": "[parameters('wlsUserName')]"
                     }
