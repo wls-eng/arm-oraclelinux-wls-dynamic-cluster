@@ -386,8 +386,8 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocationClusterTemplate'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocationClusterTemplate'), concat('scripts/', variables('name_oradownScript'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocationClusterTemplate'), concat('../scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocationClusterTemplate'), concat('../scripts/', variables('name_oradownScript'), parameters('_artifactsLocationSasToken')))]"
                     ],
                     "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('const_managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'))]"
                 }
