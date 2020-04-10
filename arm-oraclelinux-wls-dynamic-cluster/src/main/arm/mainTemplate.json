@@ -295,19 +295,19 @@
     "outputs": {
         "wlsDomainLocation": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate').outputs.wlsDomainLocation.value]"
+            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.wlsDomainLocation.value]"
         },
         "adminHostName": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate').outputs.adminHostName.value]"
+            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminHostName.value]"
         },
         "adminConsole": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate').outputs.adminConsole.value]"
+            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminConsole.value]"
         },
         "adminSecuredConsole": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate').outputs.adminSecuredConsole.value]"
+            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminSecuredConsole.value]"
         }
     }
 }
