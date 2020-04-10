@@ -281,6 +281,9 @@
                     "jdbcDataSourceName": {
                         "value": "[parameters('jdbcDataSourceName')]"
                     },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
                     "wlsPassword": {
                         "value": "[parameters('wlsPassword')]"
                     },
