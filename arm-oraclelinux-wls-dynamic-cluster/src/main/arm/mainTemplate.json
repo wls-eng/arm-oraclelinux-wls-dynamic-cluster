@@ -41,10 +41,35 @@
                 "description": "Admin Server hosting VM name."
             }
         },
+        "databaseType": {
+            "type": "string",
+            "defaultValue": "postgresql",
+            "metadata": {
+                "description": "One of the supported database types"
+            }
+        },
         "dnsLabelPrefix": {
             "type": "string",
             "metadata": {
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+            }
+        },
+        "dsConnectionURL": {
+            "type": "string",
+            "metadata": {
+                "description": "JDBC Connection String"
+            }
+        },
+        "dsUser": {
+            "type": "string",
+            "metadata": {
+                "description": "Userid of Database"
+            }
+        },
+        "dsPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "Password for Database"
             }
         },
         "dynamicClusterSize": {
@@ -52,6 +77,13 @@
             "defaultValue": 2,
             "metadata": {
                 "description": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
+            }
+        },
+        "jdbcDataSourceName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "JNDI Name for JDBC Datasource"
             }
         },
         "linuxOSVersion": {
@@ -138,13 +170,15 @@
         }
     },
     "variables": {
-        "clusterLinkedTemplateName": "clusterTemplate.json"
+        "clusterLinkedTemplateName": "clusterTemplate.json",
+        "dbLinkedTemplateName": "dbTemplate.json"
     },
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "name": "clusterLinkedTemplate",
+            "condition":false,
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -211,7 +245,52 @@
                     }
                 }
             }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "dbLinkedTemplate",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('dbLinkedTemplateName')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    },
+                    "adminVMName": {
+                        "value": "[parameters('adminVMName')]"
+                    },
+                    "dsConnectionURL": {
+                        "value": "[parameters('dsConnectionURL')]"
+                    },
+                    "databaseType": {
+                        "value": "[parameters('databaseType')]"
+                    },
+                    "dsUser": {
+                        "value": "[parameters('dsUser')]"
+                    },
+                    "dsPassword": {
+                        "value": "[parameters('dsPassword')]"
+                    },
+                    "jdbcDataSourceName": {
+                        "value": "[parameters('jdbcDataSourceName')]"
+                    },
+                    "wlsPassword": {
+                        "value": "[parameters('wlsPassword')]"
+                    },
+                    "wlsUserName": {
+                        "value": "[parameters('wlsUserName')]"
+                    }
+                }
+            }
         }
+
     ],
     "outputs": {
         "wlsDomainLocation": {

@@ -8,7 +8,7 @@
                 "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
             }
         },
-        "_artifactsLocationClusterTemplate": {
+        "_artifactsLocationDbTemplate": {
             "defaultValue": "[if(contains(parameters('_artifactsLocation'), 'githubusercontent'), parameters('_artifactsLocation'), deployment().properties.templateLink.uri)]",
             "type": "string",
             "metadata": {
@@ -27,6 +27,37 @@
             "defaultValue": "adminVM",
             "metadata": {
                 "description": "Admin Server hosting VM name."
+            }
+        },
+        "databaseType": {
+            "type": "string",
+            "metadata": {
+                "description": "One of the supported database types"
+            }
+        },
+        "dsConnectionURL": {
+            "type": "string",
+            "metadata": {
+                "description": "JDBC Connection String"
+            }
+        },
+        "dsUser": {
+            "type": "string",
+            "metadata": {
+                "description": "Userid of Database"
+            }
+        },
+        "dsPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "Password for Database"
+            }
+        },
+        "jdbcDataSourceName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "JNDI Name for JDBC Datasource"
             }
         },
         "location": {
@@ -50,37 +81,11 @@
 
     },
     "variables": {
-        "const_addressPrefix": "10.0.0.0/16",
-        "const_imageOffer": "Oracle-Linux",
-        "const_imagePublisher": "Oracle",
-        "const_linuxConfiguration": {
-            "disablePasswordAuthentication": true,
-            "ssh": {
-                "publicKeys": [
-                    {
-                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-                        "keyData": "[parameters('adminPasswordOrKey')]"
-                    }
-                ]
-            }
-        },
-        "const_managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
-        "const_publicIPAddressType": "Dynamic",
-        "const_requiredPortrange": ",65200-65535,5556",
-        "const_storageAccountType": "Standard_LRS",
-        "const_subnetPrefix": "10.0.0.0/24",
-        "const_vmSize": "[parameters('vmSizeSelect')]",
-        "name_networkSecurityGroup": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
-        "name_nic": "NIC",
-        "name_oradownScript": "oradown.sh",
-        "name_outputAdminHost": "[concat(parameters('adminVMName'),variables('name_publicIPAddress'))]",
-        "name_publicIPAddress": "PublicIP",
-        "name_scriptFile": "setupDynamicClusterDomain.sh",
-        "name_storageAccount": "[concat(take(replace(parameters('guidValue'),'-',''),6),'olvm')]",
-        "name_subnet": "Subnet",
-        "name_virtualNetwork": "[concat(parameters('wlsDomainName'),'_VNET')]",
-        "ref_networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('name_networkSecurityGroup'))]",
-        "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]"
+        "const_wlsAdminPort": "7001",
+        "name_scriptFilePrefix": "datasourceConfig-",
+        "name_scriptFileSuffix-azuresql": "azuresql",
+        "name_scriptFileSuffix-oracle": "oracle",
+        "name_scriptFileSuffix-postgresql": "postegresql"
     },
     "resources": [
         {
@@ -109,10 +114,11 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocationClusterTemplate'), concat('../scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocationClusterTemplate'), concat('../scripts/', variables('name_oradownScript'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFileSuffix-azuresql'), parameters('databaseType'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFileSuffix-oracle'), parameters('databaseType'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFileSuffix-postgresql'), parameters('databaseType'), parameters('_artifactsLocationSasToken')))]"
                     ],
-                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('const_managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'))]"
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFilePrefix'),parameters('databaseType'),' ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('jdbcDataSourceName'),' ',parameters('dsConnectionURL'),' ',parameters('dsUser'),' ',parameters('dsPassword'))]"
                 }
             }
         },
@@ -135,22 +141,6 @@
         "artifactsLocationPassedIn": {
             "type": "string",
             "value": "[parameters('_artifactsLocation')]"
-        },
-        "wlsDomainLocation": {
-            "type": "string",
-            "value": "[concat('/u01/domains/', parameters('wlsDomainName'))]"
-        },
-        "adminHostName": {
-            "type": "string",
-            "value": "[reference(variables('name_outputAdminHost')).dnsSettings.fqdn]"
-        },
-        "adminConsole": {
-            "type": "string",
-            "value": "[concat('http://',reference(concat(parameters('adminVMName'),variables('name_publicIPAddress'))).dnsSettings.fqdn,':7001/console')]"
-        },
-        "adminSecuredConsole": {
-            "type": "string",
-            "value": "[concat('https://',reference(concat(parameters('adminVMName'),variables('name_publicIPAddress'))).dnsSettings.fqdn,':7002/console')]"
         }
     }
 }
