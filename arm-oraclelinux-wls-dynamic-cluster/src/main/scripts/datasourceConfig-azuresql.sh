@@ -101,7 +101,7 @@ try:
   cd('/JDBCSystemResources/$jdbcDataSourceName/JDBCResource/$jdbcDataSourceName')
   cmo.setName('$jdbcDataSourceName')
   cd('/JDBCSystemResources/$jdbcDataSourceName/JDBCResource/$jdbcDataSourceName/JDBCDataSourceParams/$jdbcDataSourceName')
-  set('JNDINames',jarray.array([String('jndi/$jdbcDataSourceName')], String))
+  set('JNDINames',jarray.array([String('$jdbcDataSourceName')], String))
   cd('/JDBCSystemResources/$jdbcDataSourceName/JDBCResource/$jdbcDataSourceName')
   cmo.setDatasourceType('GENERIC')
   cd('/JDBCSystemResources/$jdbcDataSourceName/JDBCResource/$jdbcDataSourceName/JDBCDriverParams/$jdbcDataSourceName')
