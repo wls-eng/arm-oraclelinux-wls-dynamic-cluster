@@ -83,9 +83,9 @@
     "variables": {
         "const_wlsAdminPort": "7001",
         "name_scriptFilePrefix": "datasourceConfig-",
-        "name_scriptFileSuffix-azuresql": "azuresql",
-        "name_scriptFileSuffix-oracle": "oracle",
-        "name_scriptFileSuffix-postgresql": "postegresql"
+        "name_scriptFileSuffix-azuresql": "azuresql.sh",
+        "name_scriptFileSuffix-oracle": "oracle.sh",
+        "name_scriptFileSuffix-postgresql": "postegresql.sh"
     },
     "resources": [
         {
@@ -114,11 +114,11 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFileSuffix-azuresql'), parameters('databaseType'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFileSuffix-oracle'), parameters('databaseType'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFileSuffix-postgresql'), parameters('databaseType'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFilePrefix'), variables('name_scriptFileSuffix-azuresql'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFilePrefix'), variables('name_scriptFileSuffix-oracle'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFilePrefix'), variables('name_scriptFileSuffix-postgresql'), parameters('_artifactsLocationSasToken')))]"
                     ],
-                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFilePrefix'),parameters('databaseType'),' ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('jdbcDataSourceName'),' ',parameters('dsConnectionURL'),' ',parameters('dsUser'),' ',parameters('dsPassword'))]"
+                    "commandToExecute": "[concat('sh', ' ', variables('name_scriptFilePrefix'),parameters('databaseType'),'.sh ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('jdbcDataSourceName'),' ',parameters('dsConnectionURL'),' ',parameters('dsUser'),' ',parameters('dsPassword'))]"
                 }
             }
         },
