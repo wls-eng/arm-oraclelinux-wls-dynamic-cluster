@@ -82,6 +82,7 @@
     },
     "variables": {
         "const_wlsAdminPort": "7001",
+        "const_wlsHome": "/u01/app/wls/install/Oracle/Middleware/Oracle_Home",
         "name_scriptFilePrefix": "datasourceConfig-",
         "name_scriptFileSuffix-azuresql": "azuresql.sh",
         "name_scriptFileSuffix-oracle": "oracle.sh",
@@ -118,7 +119,7 @@
                         "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFilePrefix'), variables('name_scriptFileSuffix-oracle'), parameters('_artifactsLocationSasToken')))]",
                         "[uri(parameters('_artifactsLocationDbTemplate'), concat('../scripts/', variables('name_scriptFilePrefix'), variables('name_scriptFileSuffix-postgresql'), parameters('_artifactsLocationSasToken')))]"
                     ],
-                    "commandToExecute": "[concat('sh', ' ', variables('name_scriptFilePrefix'),parameters('databaseType'),'.sh ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('jdbcDataSourceName'),' ',parameters('dsConnectionURL'),' ',parameters('dsUser'),' ',parameters('dsPassword'))]"
+                    "commandToExecute": "[concat('sh', ' ', variables('name_scriptFilePrefix'),parameters('databaseType'),'.sh ',variables('const_wlsHome'),' ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('jdbcDataSourceName'),' ',parameters('dsConnectionURL'),' ',parameters('dsUser'),' ',parameters('dsPassword'))]"
                 }
             }
         },
