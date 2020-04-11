@@ -85,7 +85,7 @@
         "name_scriptFilePrefix": "datasourceConfig-",
         "name_scriptFileSuffix-azuresql": "azuresql.sh",
         "name_scriptFileSuffix-oracle": "oracle.sh",
-        "name_scriptFileSuffix-postgresql": "postegresql.sh"
+        "name_scriptFileSuffix-postgresql": "postgresql.sh"
     },
     "resources": [
         {
