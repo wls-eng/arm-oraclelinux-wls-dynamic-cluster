@@ -43,7 +43,6 @@
         },
         "databaseType": {
             "type": "string",
-            "defaultValue": "postgresql",
             "metadata": {
                 "description": "One of the supported database types"
             }
