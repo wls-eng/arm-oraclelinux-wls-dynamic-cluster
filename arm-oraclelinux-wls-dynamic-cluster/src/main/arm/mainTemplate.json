@@ -177,7 +177,6 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "name": "clusterLinkedTemplate",
-            "condition":false,
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
