@@ -26,7 +26,7 @@
 
     <groupId>com.oracle.weblogic.azure</groupId>
     <artifactId>arm-oraclelinux-wls-dynamic-cluster</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.22</version>
     
     <parent>
         <groupId>com.microsoft.azure.iaas</groupId>
@@ -40,7 +40,7 @@
 
     <properties>
         <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
-        <template.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/cd9a3d2b3511a26983b99bdf1c9c4a301c56b029/src/main/resources/pid.properties</template.pid.properties.url>
+        <template.pid.properties.url>https://raw.githubusercontent.com/edburns/arm-oraclelinux-wls/d36fd201eb561513c97b6a8a4b6ded910402b0d3/src/main/resources/pid.properties</template.pid.properties.url>
     </properties>
     
     <description>
