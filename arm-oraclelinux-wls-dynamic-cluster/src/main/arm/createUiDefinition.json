@@ -5,125 +5,23 @@
     "parameters": {
         "basics": [
             {
-                "name": "dnsLabelPrefix",
+                "name": "acceptOTNLicenseAgreement",
+                "label": "Accept OTN License Agreement",
                 "type": "Microsoft.Common.TextBox",
-                "label": "DNS Label Prefix",
-                "toolTip": "The string to prepend to the DNS label.",
-                "defaultValue": "wls",
+                "toolTip": "A value of N indicates you do not accept the OTN License Agreement.  In that case the deployment will fail.",
+                "defaultValue": "Y",
+                "visible": true,
                 "constraints": {
                     "required": true,
-                    "regex": "^[a-z0-9A-Z]{3,10}$",
-                    "validationMessage": "The prefix must be between 3 and 10 characters long and contain letters, numbers only."
+                    "regex": "^[Yy]$",
+                    "validationMessage": "The value must be Y/y to proceed with deployment."
                 }
             },
             {
-                "name": "managedServerPrefix",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Managed Server Prefix",
-                "toolTip": "The string to prepend to the name of the managed server.  Must start with letters and not have a run of more than eight digits.",
-                "defaultValue": "msp",
-                "constraints": {
-                    "required": true,
-                    "regex": "^[a-z0-9A-Z]{3,20}$",
-                    "validationMessage": "The prefix must be between 3 and 20 characters long and contain letters, numbers only."
-                }
-            },
-            {
-                "name": "maxDynamicClusterSize",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Maximum Dynamic Cluster Size",
-                "defaultValue": "8",
-                "toolTip": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster",
-                "constraints": {
-                    "required": true,
-                    "regex": "^(2|3|4|5|6|7|8|9|10)$",
-                    "validationMessage": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
-                },
-                "visible": true
-            },
-            {
-                "name": "dynamicClusterSize",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Initial Dynamic Cluster Size",
-                "defaultValue": "3",
-                "toolTip": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster",
-                "constraints": {
-                    "required": true,
-                    "regex": "^(2|3|4|5|6|7|8|9|10)$",
-                    "validationMessage": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
-                },
-                "visible": true
-            },
-            {
-                "name": "wlsDomainName",
-                "type": "Microsoft.Common.TextBox",
-                "label": "WebLogic Domain Name",
-                "toolTip": "The name of the WebLogic Domain to create.",
-                "defaultValue": "clusterDomain",
-                "constraints": {
-                    "required": true,
-                    "regex": "^[a-z0-9A-Z]{3,20}$",
-                    "validationMessage": "The Domain Name must be between 3 and 20 characters long and contain letters, numbers only."
-                }
-            },
-            {
-              "name": "About",
-              "type": "Microsoft.Common.InfoBox",
-              "visible": true,
-              "options": {
-                "icon": "None",
-                "text": "Template version ${project.version}"
-              }
-            }
-        ],
-        "steps": [
-            {
-                "name": "VirtualMachineConfig",
-                "label": "Virtual Machine Settings",
-                "subLabel": {
-                    "preValidation": "Configure the resources and settings of the virtual machines that comprise the nodes of the WebLogic Domain. ",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Node Virtual Machine Settings",
+                "name": "basicsRequired",
+                "type": "Microsoft.Common.Section",
+                "label": "Credentails for Virtual Machines and WebLogic",
                 "elements": [
-                    {
-                        "name": "vmSizeSelect",
-                        "type": "Microsoft.Compute.SizeSelector",
-                        "label": "Virtual machine size",
-                        "toolTip": "The size of virtual machine to provision.",
-                        "recommendedSizes": [
-                            "Standard_A1",
-                            "Standard_A2",
-                            "Standard_A3",
-                            "Standard_A4"
-                        ],
-                        "osPlatform": "Linux",
-                        "count": "1"
-                    }
-                ]
-            },
-            {
-                "name": "Credentials",
-                "label": "Credentials for Cluster Creation",
-                "subLabel": {
-                    "preValidation": "Provide credentials Required for Cluster Creation",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Credentials for Cluster Creation",
-                "elements": [
-                    {
-                        "name": "acceptOTNLicenseAgreement",
-                        "label": "Accept OTN License Agreement",
-                        "type": "Microsoft.Common.TextBox",
-                        "toolTip": "A value of N indicates you do not accept the OTN License Agreement.  In that case the deployment will fail.",
-                        "defaultValue": "Y",
-                        "visible": true,
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[Yy]$",
-                            "validationMessage": "The value must be Y/y to proceed with deployment."
-                        }
-                    },
                     {
                         "name": "adminUsername",
                         "type": "Microsoft.Common.TextBox",
@@ -213,50 +111,295 @@
                             "hideConfirmation": false
                         },
                         "visible": true
+                    },
+                    {
+                        "name": "dynamicClusterSize",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Initial Dynamic Cluster Size",
+                        "defaultValue": "3",
+                        "toolTip": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^(2|3|4|5|6|7|8|9|10)$",
+                            "validationMessage": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "maxDynamicClusterSize",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Maximum Dynamic Cluster Size",
+                        "defaultValue": "8",
+                        "toolTip": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^(2|3|4|5|6|7|8|9|10)$",
+                            "validationMessage": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
+                        },
+                        "visible": true
                     }
-                ]
+
+                ],
+                "visible": true
             },
             {
-                "name": "Network",
-                "label": "Network",
-                "subLabel": {
-                    "preValidation": "Parameters to customzie network settings",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Network",
+                "name": "basicsOptional",
+                "type": "Microsoft.Common.Section",
+                "label": "Optional Basic Configuration",
                 "elements": [
+                    {
+                        "name": "basicsOptionalAcceptDefaults",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Accept defaults for optional configuration?",
+                        "defaultValue": "Yes",
+                        "toolTip": "Select 'No' to edit optional basic configuration.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Yes",
+                                    "value": "false"
+                                },
+                                {
+                                    "label": "No",
+                                    "value": "true"
+                                }
+                            ],
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "dnsLabelPrefix",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "DNS Label Prefix",
+                        "toolTip": "The string to prepend to the DNS label.",
+                        "defaultValue": "wls",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z]{3,10}$",
+                            "validationMessage": "The prefix must be between 3 and 10 characters long and contain letters, numbers only."
+                        },
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+                    },
+                    {
+                        "name": "managedServerPrefix",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Managed Server Prefix",
+                        "toolTip": "The string to prepend to the name of the managed server.  Must start with letters and not have a run of more than eight digits.",
+                        "defaultValue": "msp",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z]{3,20}$",
+                            "validationMessage": "The prefix must be between 3 and 20 characters long and contain letters, numbers only."
+                        },
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+                    },
+                    {
+                        "name": "wlsDomainName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "WebLogic Domain Name",
+                        "toolTip": "The name of the WebLogic Domain to create.",
+                        "defaultValue": "clusterDomain",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-z0-9A-Z]{3,20}$",
+                            "validationMessage": "The Domain Name must be between 3 and 20 characters long and contain letters, numbers only."
+                        },
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+                    },
+                    {
+                        "name": "vmSizeSelect",
+                        "type": "Microsoft.Compute.SizeSelector",
+                        "label": "Virtual machine size",
+                        "toolTip": "The size of virtual machine to provision.",
+                        "recommendedSizes": [
+                            "Standard_A1",
+                            "Standard_A2",
+                            "Standard_A3",
+                            "Standard_A4"
+                        ],
+                        "osPlatform": "Linux",
+                        "count": "1",
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+                    },
                     {
                         "name": "portsToExpose",
                         "label": "Ports and port ranges to expose (N or N-N, comma separated)",
                         "type": "Microsoft.Common.TextBox",
                         "toolTip": "Ports and port ranges to expose (N or N-N, comma separated)",
                         "defaultValue": "80,443,7001-9000",
-                        "visible": true,
                         "constraints": {
                             "required": true,
                             "regex": "^((([0-9]+-[0-9]+)|([0-9]+))[,]?)+[^,]$",
                             "validationMessage": "Only numbers, hyphen separated ranges of numbers, separated by commas"
-                        }
+                        },
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+                    },
+                    {
+                        "name": "About",
+                        "type": "Microsoft.Common.InfoBox",
+                        "options": {
+                            "icon": "None",
+                            "text": "Template version ${project.version}"
+                        },
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
                     }
-                ]
+                ],
+                "visible": true
             }
         ],
+        "steps": [
+            {
+                "name": "serviceIntegrations",
+                "type": "Microsoft.Common.Section",
+                "label": "Service Integrations",
+                "subLabel": {
+                    "preValidation": "Configure integrations to Azure services",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Service Integrations",
+                "elements": [
+                    {
+                        "name": "connectToDatabase",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Connect to Database?",
+                        "defaultValue": "No",
+                        "toolTip": "Select 'Yes' and provide required info to configure the connection to a database.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Yes",
+                                    "value": "true"
+                                },
+                                {
+                                    "label": "No",
+                                    "value": "false"
+                                }
+                            ],
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "aboutDatabase",
+                        "type": "Microsoft.Common.TextBlock",
+                        "visible": true,
+                        "options": {
+                            "text": "Selecting 'Yes' here and providing the configuration will cause the template to configure the WebLogic Server to connect to the desired pre-existing Database.  The database must be network accessible to the VNET and subnets created by the template."
+                        }
+                    },
+                    {
+                        "name": "databaseConnectionInfo",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Connection settings",
+                        "elements": [
+                            {
+                                "name": "databaseType",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Choose database type",
+                                "toolTip": "Choose database type",
+                                "defaultValue": "oracle",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Azure Database for PostgreSQL",
+                                            "value": "postgresql"
+                                        },
+                                        {
+                                            "label": "Oracle Database",
+                                            "value": "oracle"
+                                        },
+                                        {
+                                            "label": "Azure SQL",
+                                            "value": "azuresql"
+                                        }
+                                    ],
+                                    "required": true
+                                },
+                                "visible": true
+                            },                            
+                            {
+                                "name": "jdbcDataSourceName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "JNDI Name",
+                                "toolTip": "The JNDI name for the database JDBC connection",
+                                "constraints": {
+                                    "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
+                                    "regex": "^[a-z0-9A-Z]{1,30}$",
+                                    "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "dsConnectionURL",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "DataSource Connection String",
+                                "toolTip": "The JDBC connection string for the database",
+                                "constraints": {
+                                    "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
+                                    "regex": "^.*$",
+                                    "validationMessage": "A valid JDBC URL must be provided"
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "dsUser",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Database Username",
+                                "toolTip": "Use only letters and numbers",
+                                "constraints": {
+                                    "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
+                                    "regex": "^(([a-zA-Z0-9]){6,30})@(([a-zA-Z0-9]){6,30})$",
+                                    "validationMessage": "The value must be 1-30 characters long and must only contain letters, numbers and the at sign."
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "dsPassword",
+                                "type": "Microsoft.Common.PasswordBox",
+                                "label": {
+                                    "password": "Database Password",
+                                    "confirmPassword": "Confirm password"
+                                },
+                                "toolTip": "Database Password",
+                                "constraints": {
+                                    "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
+                                    "regex": "^((?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])|(?=.*[0-9])(?=.*[a-z])(?=.*[!@#$%^&*])|(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*])|(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])).{8,128}$",
+                                    "validationMessage": "The password must contain at least 12 characters, with at least 1 uppercase letter, 1 lowercase letter and 1 number."
+                                },
+                                "options": {
+                                    "hideConfirmation": false
+                                },
+                                "visible": true
+                            }
+                        ],
+                        "visible": "[bool(steps('serviceIntegrations').connectToDatabase)]"
+                    }
+                ]
+            }            
+        ],
         "outputs": {
-            "acceptOTNLicenseAgreement": "[steps('Credentials').acceptOTNLicenseAgreement]",
-            "adminPasswordOrKey": "[steps('Credentials').adminPasswordOrKey]",
-            "adminUsername": "[steps('Credentials').adminUsername]",
-            "dnsLabelPrefix": "[basics('dnsLabelPrefix')]",
-            "managedServerPrefix": "[basics('managedServerPrefix')]",
-            "maxDynamicClusterSize": "[int(basics('maxDynamicClusterSize'))]",
-            "dynamicClusterSize": "[int(basics('dynamicClusterSize'))]",
-            "otnAccountPassword": "[steps('Credentials').otnAccountPassword]",
-            "otnAccountUsername": "[steps('Credentials').otnAccountUsername]",
-            "portsToExpose": "[steps('Network').portsToExpose]",
-            "vmSizeSelect": "[steps('VirtualMachineConfig').vmSizeSelect]",
-            "wlsDomainName": "[basics('wlsDomainName')]",
-            "wlsPassword": "[steps('Credentials').wlsPassword]",
-            "wlsUserName": "[steps('Credentials').wlsUserName]",
-            "Location": "[location()]"
+            "Location": "[location()]",
+            "acceptOTNLicenseAgreement": "[basics('acceptOTNLicenseAgreement')]",
+            "adminPasswordOrKey": "[basics('basicsRequired').adminPasswordOrKey]",
+            "adminUsername": "[basics('basicsRequired').adminUsername]",
+            "connectToDatabase": "[steps('serviceIntegrations').connectToDatabase]",
+            "databaseType": "[steps('serviceIntegrations').databaseConnectionInfo.databaseType]",
+            "dnsLabelPrefix": "[basics('basicsOptional').dnsLabelPrefix]",
+            "dsPassword": "[steps('serviceIntegrations').databaseConnectionInfo.dsPassword]",
+            "dsUser": "[steps('serviceIntegrations').databaseConnectionInfo.dsUser]",
+            "dynamicClusterSize": "[int(basics('basicsRequired').dynamicClusterSize)]",
+            "dsConnectionURL": "[steps('serviceIntegrations').databaseConnectionInfo.dsConnectionURL]",
+            "jdbcDataSourceName": "[steps('serviceIntegrations').databaseConnectionInfo.jdbcDataSourceName]",
+            "managedServerPrefix": "[basics('basicsOptional').managedServerPrefix]",
+            "maxDynamicClusterSize": "[int(basics('basicsRequired').maxDynamicClusterSize)]",
+            "otnAccountPassword": "[basics('basicsRequired').otnAccountPassword]",
+            "otnAccountUsername": "[basics('basicsRequired').otnAccountUsername]",
+            "portsToExpose": "[basics('basicsOptional').portsToExpose]",
+            "vmSizeSelect": "[basics('basicsOptional').vmSizeSelect]",
+            "wlsDomainName": "[basics('basicsOptional').wlsDomainName]",
+            "wlsPassword": "[basics('basicsRequired').wlsPassword]",
+            "wlsUserName": "[basics('basicsRequired').wlsUserName]"
+
+
         }
     }
 }

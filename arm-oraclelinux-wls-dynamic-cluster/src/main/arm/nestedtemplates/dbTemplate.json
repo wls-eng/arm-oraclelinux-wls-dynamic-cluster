@@ -48,7 +48,7 @@
             }
         },
         "dsPassword": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Password for Database"
             }

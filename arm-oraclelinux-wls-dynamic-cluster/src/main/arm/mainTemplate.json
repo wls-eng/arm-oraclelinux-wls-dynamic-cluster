@@ -41,6 +41,13 @@
                 "description": "Admin Server hosting VM name."
             }
         },
+        "connectToDatabase": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "If true, use the supplied parameters to connect the cluster to a pre-provisioned database."
+            }
+        },
         "databaseType": {
             "type": "string",
             "metadata": {
@@ -66,7 +73,7 @@
             }
         },
         "dsPassword": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Password for Database"
             }
@@ -248,6 +255,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "name": "dbLinkedTemplate",
+            "condition": "[parameters('connectToDatabase')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
