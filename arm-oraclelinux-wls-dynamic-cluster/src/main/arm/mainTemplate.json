@@ -319,7 +319,10 @@
             "apiVersion": "2019-10-01",
             "name": "${dynamic.end}",
             "type": "Microsoft.Resources/deployments",
-            "dependsOn": "clusterLinkedTemplate,dbLinkedTemplate",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'clusterLinkedTemplate')]",
+                "[resourceId('Microsoft.Resources/deployments', 'dbLinkedTemplate')]"
+            ],
             "properties": {
                 "mode": "Incremental",
                 "template": {

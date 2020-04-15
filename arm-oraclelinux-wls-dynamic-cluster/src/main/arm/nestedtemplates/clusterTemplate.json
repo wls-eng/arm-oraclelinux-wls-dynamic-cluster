@@ -397,7 +397,7 @@
             "apiVersion": "2019-10-01",
             "name": "${dynamic.cluster.end}",
             "type": "Microsoft.Resources/deployments",
-            "dependsOn": "virtualMachineExtensionLoop",
+            "dependsOn": ["virtualMachineExtensionLoop"],
             "properties": {
                 "mode": "Incremental",
                 "template": {
