@@ -128,7 +128,9 @@
             "apiVersion": "2019-10-01",
             "name": "${dynamic.cluster.end}",
             "type": "Microsoft.Resources/deployments",
-            "dependsOn": "[resourceId('Microsoft.Resources/deployments', concat(parameters('adminVMName'),'/newuserscript'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', concat(parameters('adminVMName'),'/newuserscript'))]"
+            ],
             "properties": {
                 "mode": "Incremental",
                 "template": {
