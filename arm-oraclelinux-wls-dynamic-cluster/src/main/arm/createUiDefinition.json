@@ -211,6 +211,7 @@
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Virtual machine size",
                         "toolTip": "The size of virtual machine to provision.",
+                        "defaultValue": "Standard_A1",
                         "recommendedSizes": [
                             "Standard_A1",
                             "Standard_A2",
@@ -398,8 +399,6 @@
             "wlsDomainName": "[basics('basicsOptional').wlsDomainName]",
             "wlsPassword": "[basics('basicsRequired').wlsPassword]",
             "wlsUserName": "[basics('basicsRequired').wlsUserName]"
-
-
         }
     }
 }

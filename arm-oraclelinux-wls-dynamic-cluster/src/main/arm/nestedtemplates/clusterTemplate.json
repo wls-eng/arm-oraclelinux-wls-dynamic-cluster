@@ -373,7 +373,7 @@
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "copy": {
-                "name": "virtualMachineiExtensionLoop",
+                "name": "virtualMachineExtensionLoop",
                 "count": "[add(parameters('dynamicClusterSize'),1)]"
             },
             "dependsOn": [
@@ -397,6 +397,7 @@
             "apiVersion": "2019-10-01",
             "name": "${dynamic.cluster.end}",
             "type": "Microsoft.Resources/deployments",
+            "dependsOn": "virtualMachineExtensionLoop",
             "properties": {
                 "mode": "Incremental",
                 "template": {
