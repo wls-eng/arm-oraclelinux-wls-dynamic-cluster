@@ -381,7 +381,7 @@
             "acceptOTNLicenseAgreement": "[basics('acceptOTNLicenseAgreement')]",
             "adminPasswordOrKey": "[basics('basicsRequired').adminPasswordOrKey]",
             "adminUsername": "[basics('basicsRequired').adminUsername]",
-            "connectToDatabase": "[steps('serviceIntegrations').connectToDatabase]",
+            "connectToDatabase": "[bool(steps('serviceIntegrations').connectToDatabase)]",
             "databaseType": "[steps('serviceIntegrations').databaseConnectionInfo.databaseType]",
             "dnsLabelPrefix": "[basics('basicsOptional').dnsLabelPrefix]",
             "dsPassword": "[steps('serviceIntegrations').databaseConnectionInfo.dsPassword]",
