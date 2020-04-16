@@ -127,10 +127,10 @@
         },
         {
             "apiVersion": "2019-10-01",
-            "name": "${dynamic.cluster.end}",
+            "name": "${dynamic.database.end}",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "[resourceId(variables('const_currentSubscription'), resourceGroup(), 'Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), '/newuserscript')]"
+                "[resourceId(variables('const_currentSubscription'), resourceGroup().name, 'Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), '/newuserscript')]"
             ],
             "properties": {
                 "mode": "Incremental",
