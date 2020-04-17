@@ -82,7 +82,6 @@
     },
     "variables": {
         "const_singleQuote": "'",
-        "const_currentSubscription": "[subscription().subscriptionId]",
         "const_wlsAdminPort": "7001",
         "const_wlsHome": "/u01/app/wls/install/Oracle/Middleware/Oracle_Home",
         "name_scriptFilePrefix": "datasourceConfig-",
@@ -130,7 +129,7 @@
             "name": "${dynamic.database.end}",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "[resourceId(variables('const_currentSubscription'), resourceGroup().name, 'Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), '/newuserscript')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('adminVMName'), 'extensions', 'newuserscript')]"
             ],
             "properties": {
                 "mode": "Incremental",
