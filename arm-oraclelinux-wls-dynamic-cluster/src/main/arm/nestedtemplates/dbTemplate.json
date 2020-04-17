@@ -106,7 +106,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "dbVmExtension",
+            "name": "[concat(parameters('adminVMName'),'/newuserscript')]",
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "properties": {
@@ -129,7 +129,7 @@
             "name": "${dynamic.database.end}",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "dbVmExtension"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), 'newuserscript')]"
             ],
             "properties": {
                 "mode": "Incremental",
