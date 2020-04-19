@@ -310,7 +310,7 @@
                                         },
                                         {
                                             "label": "Azure SQL",
-                                            "value": "azuresql"
+                                            "value": "sqlserver"
                                         }
                                     ],
                                     "required": true
@@ -322,6 +322,7 @@
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "JNDI Name",
                                 "toolTip": "The JNDI name for the database JDBC connection",
+                                "defaultValue": "",
                                 "constraints": {
                                     "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
                                     "regex": "^[a-z0-9A-Z]{1,30}$",
@@ -334,10 +335,11 @@
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "DataSource Connection String",
                                 "toolTip": "The JDBC connection string for the database",
+                                "defaultValue": "",
                                 "constraints": {
                                     "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
-                                    "regex": "^.*$",
-                                    "validationMessage": "A valid JDBC URL must be provided"
+                                    "regex": "^jdbc:(sqlserver|postgresql|oracle)[\\d\\D][^{}]+$",
+                                    "validationMessage": "A valid JDBC URL for the chosen database type must be provided"
                                 },
                                 "visible": true
                             },
@@ -346,6 +348,7 @@
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "Database Username",
                                 "toolTip": "Use only letters and numbers",
+                                "defaultValue": "",
                                 "constraints": {
                                     "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
                                     "regex": "^(([a-zA-Z0-9]){6,30})@(([a-zA-Z0-9]){6,30})$",
@@ -385,10 +388,10 @@
             "connectToDatabase": "[bool(steps('serviceIntegrations').connectToDatabase)]",
             "databaseType": "[steps('serviceIntegrations').databaseConnectionInfo.databaseType]",
             "dnsLabelPrefix": "[basics('basicsOptional').dnsLabelPrefix]",
+            "dsConnectionURL": "[steps('serviceIntegrations').databaseConnectionInfo.dsConnectionURL]",
             "dsPassword": "[steps('serviceIntegrations').databaseConnectionInfo.dsPassword]",
             "dsUser": "[steps('serviceIntegrations').databaseConnectionInfo.dsUser]",
             "dynamicClusterSize": "[int(basics('basicsRequired').dynamicClusterSize)]",
-            "dsConnectionURL": "[steps('serviceIntegrations').databaseConnectionInfo.dsConnectionURL]",
             "jdbcDataSourceName": "[steps('serviceIntegrations').databaseConnectionInfo.jdbcDataSourceName]",
             "managedServerPrefix": "[basics('basicsOptional').managedServerPrefix]",
             "maxDynamicClusterSize": "[int(basics('basicsRequired').maxDynamicClusterSize)]",
