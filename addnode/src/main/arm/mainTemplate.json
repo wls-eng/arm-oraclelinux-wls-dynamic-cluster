@@ -172,7 +172,7 @@
    "resources": [
       {
          "apiVersion": "2019-10-01",
-         "name": "${tracking.pid}",
+         "name": "${dynamic.cluster.addnode.start}",
          "type": "Microsoft.Resources/deployments",
          "properties": {
             "mode": "Incremental",
@@ -328,7 +328,22 @@
                     "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('adminURL'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'))]"
             }
          }
-      }
+      },
+      {
+         "apiVersion": "2019-10-01",
+         "name": "${dynamic.cluster.addnode.end}",
+         "type": "Microsoft.Resources/deployments",
+         "dependsOn": [ "virtualMachineExtensionLoop" ]
+         "properties": {
+            "mode": "Incremental",
+            "template": {
+               "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "contentVersion": "1.0.0.0",
+               "resources": [
+               ]
+            }
+         }
+      }       
    ],
    "outputs": {
       "wlsDomainLocation": {
