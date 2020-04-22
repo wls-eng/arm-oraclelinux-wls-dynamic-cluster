@@ -297,7 +297,7 @@
                                 "type": "Microsoft.Common.DropDown",
                                 "label": "Choose database type",
                                 "toolTip": "Choose database type",
-                                "defaultValue": "oracle",
+                                "defaultValue": "Oracle Database",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -338,7 +338,7 @@
                                 "defaultValue": "",
                                 "constraints": {
                                     "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
-                                    "regex": "^jdbc:(sqlserver|postgresql|oracle)[\\d\\D][^{}]+$",
+                                    "regex": "[concat('^jdbc:', coalesce(steps('serviceIntegrations').databaseConnectionInfo.databaseType, ''), '.*$')]",
                                     "validationMessage": "A valid JDBC URL for the chosen database type must be provided"
                                 },
                                 "visible": true
