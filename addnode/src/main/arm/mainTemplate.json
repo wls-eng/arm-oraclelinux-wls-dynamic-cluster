@@ -321,11 +321,11 @@
             "typeHandlerVersion": "2.0",
             "autoUpgradeMinorVersion": true,
             "settings": {
-                    "fileUris": [
-                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]",
-                        "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('oradownScript'), parameters('_artifactsLocationSasToken')))]"
-                    ],
-                    "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('adminURL'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'))]"
+               "fileUris": [
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('ScriptFileName'), parameters('_artifactsLocationSasToken')))]",
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('oradownScript'), parameters('_artifactsLocationSasToken')))]"
+               ],
+               "commandToExecute": "[concat('sh',' ',variables('ScriptFileName'),' ',parameters('acceptOTNLicenseAgreement'),' ',parameters('otnAccountUsername'),' ',parameters('otnAccountPassword'),' ',parameters('wlsDomainName'),' ',parameters('adminURL'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'))]"
             }
          }
       },
@@ -333,7 +333,9 @@
          "apiVersion": "2019-10-01",
          "name": "${dynamic.cluster.addnode.end}",
          "type": "Microsoft.Resources/deployments",
-         "dependsOn": [ "virtualMachineExtensionLoop" ]
+         "dependsOn": [
+            "virtualMachineExtensionLoop"
+         ],
          "properties": {
             "mode": "Incremental",
             "template": {
@@ -343,7 +345,7 @@
                ]
             }
          }
-      }       
+      }
    ],
    "outputs": {
       "wlsDomainLocation": {
