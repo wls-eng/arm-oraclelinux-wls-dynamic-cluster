@@ -351,7 +351,7 @@
                                 "defaultValue": "",
                                 "constraints": {
                                     "required": "[bool(steps('serviceIntegrations').connectToDatabase)]",
-                                    "regex": "^(([a-zA-Z0-9]@){6,30})$",
+                                    "regex": "^(([a-zA-Z0-9@]){6,30})$",
                                     "validationMessage": "The value must be 1-30 characters long and must only contain letters, numbers and the at sign."
                                 },
                                 "visible": true
