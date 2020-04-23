@@ -31,7 +31,7 @@
     <parent>
         <groupId>com.microsoft.azure.iaas</groupId>
         <artifactId>azure-javaee-iaas-parent</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6</version>
         <relativePath></relativePath>
     </parent>
 
@@ -41,11 +41,11 @@
     <properties>
       <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
       <test.parameters>-TestParameter '@{&quot;SampleName&quot;=&quot;addnode/src/main/scripts&quot;;&quot;RawRepoPath&quot;=&quot;${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/&quot;}'</test.parameters>
-      <template.pid.properties.url>https://raw.githubusercontent.com/edburns/arm-oraclelinux-wls/aaae6902181db1475d83cd93b40a727918835077/src/main/resources/microsoft-pid.properties</template.pid.properties.url>
+      <template.pid.properties.url>https://raw.githubusercontent.com/galiacheng/arm-oraclelinux-wls/master/src/main/resources/pid.properties</template.pid.properties.url>
+      <template.microsoft.pid.properties.url>https://raw.githubusercontent.com/galiacheng/arm-oraclelinux-wls/master/src/main/resources/microsoft-pid.properties</template.microsoft.pid.properties.url>
     </properties>
 
     <description>
         
     </description>
-
 </project>
