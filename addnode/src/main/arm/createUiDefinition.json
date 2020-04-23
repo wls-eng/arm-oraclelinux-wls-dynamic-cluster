@@ -29,13 +29,13 @@
                 }
             },
             {
-              "name": "About",
-              "type": "Microsoft.Common.InfoBox",
-              "visible": true,
-              "options": {
-                "icon": "None",
-                "text": "Template version ${project.version}"
-              }
+                "name": "About",
+                "type": "Microsoft.Common.InfoBox",
+                "options": {
+                    "icon": "None",
+                    "text": "Template version ${project.version}"
+                },
+                "visible": "[bool('${template.version.visible}')]"
             }
         ],
         "steps": [

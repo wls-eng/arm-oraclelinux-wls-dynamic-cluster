@@ -234,18 +234,18 @@
                             "validationMessage": "Only numbers, hyphen separated ranges of numbers, separated by commas"
                         },
                         "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
-                    },
-                    {
-                        "name": "About",
-                        "type": "Microsoft.Common.InfoBox",
-                        "options": {
-                            "icon": "None",
-                            "text": "Template version ${project.version}"
-                        },
-                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
                     }
                 ],
                 "visible": true
+            },
+            {
+                "name": "About",
+                "type": "Microsoft.Common.InfoBox",
+                "options": {
+                    "icon": "None",
+                    "text": "Template version ${project.version}"
+                },
+                "visible": "[bool('${template.version.visible}')]"
             }
         ],
         "steps": [
