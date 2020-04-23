@@ -86,11 +86,46 @@
                 "description": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
             }
         },
+        "enableAppGateway": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "If true, deploy an Azure App Gateway in front of the nodes of the cluster"
+            }
+        },
+        "gatewayPublicIPAddressName": {
+            "defaultValue": "gatewayPublicIP",
+            "type": "string",
+            "metadata": {
+                "description": "Public IP Name for the Application Gateway"
+            }
+        },
         "jdbcDataSourceName": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
                 "description": "JNDI Name for JDBC Datasource"
+            }
+        },
+        "keyVaultName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "KeyVault Name"
+            }
+        },
+        "keyVaultResourceGroup": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Resource group name in current subscription containing the KeyVault"
+            }
+        },
+        "keyVaultSSLCertDataSecretName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data"
             }
         },
         "linuxOSVersion": {
@@ -178,8 +213,10 @@
         }
     },
     "variables": {
-        "clusterLinkedTemplateName": "clusterTemplate.json",
-        "dbLinkedTemplateName": "dbTemplate.json"
+        "const_currentSubscription": "[subscription().subscriptionId]",
+        "name_clusterLinkedTemplateName": "clusterTemplate.json",
+        "name_dbLinkedTemplateName": "dbTemplate.json",
+        "name_keyVaultLinkedTemplateName": "appGatewayNestedTemplate.json"
     },
     "resources": [
         {
@@ -203,7 +240,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('clusterLinkedTemplateName')))]",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('name_clusterLinkedTemplateName')))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -270,13 +307,56 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
-            "name": "dbLinkedTemplate",
-            "condition": "[parameters('connectToDatabase')]",
-            "dependsOn": ["clusterLinkedTemplate"],
+            "name": "keyVaultLinkedAppGatewayTemplate",
+            "condition": "[parameters('enableAppGateway')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('dbLinkedTemplateName')))]",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('name_keyVaultLinkedTemplateName')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appGatewaySSLCertificateData": {
+                        "reference": {
+                            "keyVault": {
+                                "id": "[resourceId(variables('const_currentSubscription'),  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+                            },
+                            "secretName": "[parameters('keyVaultSSLCertDataSecretName')]"
+                        }
+                    },
+                    "gatewayPublicIPAddressName": {
+                        "value": "[parameters('gatewayPublicIPAddressName')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "managedServerPrefix": {
+                        "value": "[parameters('managedServerPrefix')]"
+                    },
+                    "numberOfInstances": {
+                        "value": "[parameters('dynamicClusterSize')]"
+                    },
+                    "wlsDomainName": {
+                        "value": "[parameters('wlsDomainName')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'clusterLinkedTemplate')]"
+            ]
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "dbLinkedTemplate",
+            "condition": "[parameters('connectToDatabase')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'keyVaultLinkedAppGatewayTemplate')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('name_dbLinkedTemplateName')))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -322,6 +402,7 @@
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'clusterLinkedTemplate')]",
+                "[resourceId('Microsoft.Resources/deployments', 'keyVaultLinkedAppGatewayTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'dbLinkedTemplate')]"
             ],
             "properties": {
@@ -352,6 +433,11 @@
         "adminSecuredConsole": {
             "type": "string",
             "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminSecuredConsole.value]"
+        },
+        "appGatewayURL": {
+            "type": "string",
+            "value": "[if(parameters('enableAppGateway'), reference('keyVaultLinkedAppGatewayTemplate', '2019-10-01').outputs.appGatewayURL.value, '')]"
+
         }
     }
 }
