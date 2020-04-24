@@ -179,6 +179,7 @@
     },
     "variables": {
         "const_addressPrefix": "10.0.0.0/16",
+        "const_appGatewaySubnetPrefix": "10.0.1.0/24",
         "name_dnsNameforApplicationGateway": "[concat(parameters('dnsNameforApplicationGateway'), take(replace(parameters('guidValue'),'-',''),6))]",
         "const_imageOffer": "Oracle-Linux",
         "const_imagePublisher": "Oracle",
@@ -199,6 +200,7 @@
         "const_storageAccountType": "Standard_LRS",
         "const_subnetPrefix": "10.0.0.0/24",
         "const_vmSize": "[parameters('vmSizeSelect')]",
+        "name_appGatewaySubnet": "appGatewaySubnet",
         "name_networkSecurityGroup": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
         "name_nic": "NIC",
         "name_oradownScript": "oradown.sh",
@@ -319,7 +321,20 @@
                                 "id": "[variables('ref_networkSecurityGroup')]"
                             }
                         }
+                    },
+                    {
+                        // PENDING(edburns): Assume it is acceptable to create a subnet for the App Gateway, even if the user
+                        // has not requested an App Gateway.  In support of this assumption we can note: the user may want an App 
+                        // Gateway after deployment.
+                        "name": "[variables('name_appGatewaySubnet')]",
+                        "properties": {
+                            "addressPrefix": "[variables('const_appGatewaySubnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[variables('ref_networkSecurityGroup')]"
+                            }
+                        }
                     }
+
                 ]
             }
         },
