@@ -61,6 +61,13 @@
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             }
         },
+        "dnsNameforApplicationGateway": {
+            "defaultValue": "wlsclusterappgw",
+            "type": "string",
+            "metadata": {
+                "description": "DNS for ApplicationGateway"
+            }
+        },
         "dsConnectionURL": {
             "type": "string",
             "metadata": {
@@ -264,6 +271,15 @@
                     },
                     "dnsLabelPrefix": {
                         "value": "[parameters('dnsLabelPrefix')]"
+                    },
+                    "dnsNameforApplicationGateway": {
+                        "value": "[parameters('dnsNameforApplicationGateway')]"
+                    },
+                    "enableAppGateway": {
+                        "value": "[parameters('enableAppGateway')]"
+                    },
+                    "gatewayPublicIPAddressName": {
+                        "value": "[parameters('gatewayPublicIPAddressName')]"
                     },
                     "dynamicClusterSize": {
                         "value": "[parameters('dynamicClusterSize')]"

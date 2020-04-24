@@ -64,11 +64,32 @@
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             }
         },
+        "enableAppGateway": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "If true, deploy the necessary resoucres required for the App Gateway"
+            }
+        },
         "dynamicClusterSize": {
             "type": "int",
             "defaultValue": 2,
             "metadata": {
                 "description": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
+            }
+        },
+        "dnsNameforApplicationGateway": {
+            "type": "string",
+            "defaultValue": "wlsappgw",
+            "metadata": {
+                "description": "DNS for ApplicationGateway"
+            }
+        },
+        "gatewayPublicIPAddressName": {
+            "type": "string",
+            "defaultValue": "gatewayPublicIP",
+            "metadata": {
+                "description": "Public IP Name for the Application Gateway"
             }
         },
         "guidValue": {
@@ -158,6 +179,7 @@
     },
     "variables": {
         "const_addressPrefix": "10.0.0.0/16",
+        "name_dnsNameforApplicationGateway": "[concat(parameters('dnsNameforApplicationGateway'), take(replace(parameters('guidValue'),'-',''),6))]",
         "const_imageOffer": "Oracle-Linux",
         "const_imagePublisher": "Oracle",
         "const_linuxConfiguration": {
@@ -238,6 +260,25 @@
             "kind": "Storage",
             "properties": {
             }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "name": "[parameters('gatewayPublicIPAddressName')]",
+            "condition": "[parameters('enableAppGateway')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "location": "[parameters('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(variables('name_dnsNameforApplicationGateway'),'-',toLower(resourceGroup().name),'-',toLower(parameters('wlsDomainName')))]"
+                }
+            },
+            "dependsOn": [
+                "[variables('name_storageAccount')]"
+            ]
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
@@ -397,7 +438,9 @@
             "apiVersion": "2019-10-01",
             "name": "${dynamic.cluster.end}",
             "type": "Microsoft.Resources/deployments",
-            "dependsOn": ["virtualMachineExtensionLoop"],
+            "dependsOn": [
+                "virtualMachineExtensionLoop"
+            ],
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -407,7 +450,7 @@
                     ]
                 }
             }
-        }        
+        }
     ],
     "outputs": {
         "artifactsLocationPassedIn": {
