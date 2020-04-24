@@ -9,7 +9,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./setDynamicClusterDomain.sh <acceptOTNLicenseAgreement> <otnusername> <otnpassword> <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName>"
+  echo_stderr "./setDynamicClusterDomain.sh <acceptOTNLicenseAgreement> <otnusername> <otnpassword> <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <dynamicClusterSize> <adminVMName> <AppGWHostName>"
 }
 
 function setupInstallPath()
@@ -17,6 +17,7 @@ function setupInstallPath()
     JDK_PATH="/u01/app/jdk"
     WLS_PATH="/u01/app/wls"
     DOMAIN_PATH="/u01/domains"
+    DOMAIN_DIR=$DOMAIN_PATH/$wlsDomainName
     WL_HOME="/u01/app/wls/install/Oracle/Middleware/Oracle_Home/wlserver"
 
     #create custom directory for setting up wls and jdk
@@ -474,6 +475,26 @@ topology:
         '${dynamicServerTemplate}' :
             ListenPort: ${wlsManagedPort}
             Cluster: '${wlsClusterName}'
+EOF
+    if [ -n "$AppGWHostName" ];
+    then
+        cat <<EOF >>$DOMAIN_PATH/managed-domain.yaml
+           NetworkAccessPoint:
+               T3Channel:
+                   Protocol: "t3"
+                   ListenAddress: None
+                   ListenPort: $channelPort
+                   PublicAddress: "$AppGWHostName"
+                   PublicPort: $channelPort
+               HTTPChannel:
+                   Protocol: "http"
+                   ListenAddress: None
+                   ListenPort: $channelPort
+                   PublicAddress: "$AppGWHostName"
+                   PublicPort: $channelPort
+EOF
+    fi
+    cat <<EOF >>$DOMAIN_PATH/managed-domain.yaml
    SecurityConfiguration:
         NodeManagerUsername: "$wlsUserName"
         NodeManagerPasswordEncrypted: "$wlsPassword"
@@ -539,6 +560,44 @@ disconnect()
 EOF
 }
 
+#This function to add machine for a given managed server
+#This function must only be called if AppGWHostName is non-empty
+function createChannelPortsOnManagedServer()
+{
+    echo "Creating T3 channel Port on managed server $wlsServerName"
+    cat <<EOF >$DOMAIN_PATH/create-t3-channel.py
+
+connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+
+edit("$wlsServerName")
+startEdit()
+cd('/Servers/$wlsServerName')
+create('T3Channel','NetworkAccessPoint')
+cd('/Servers/$wlsServerName/NetworkAccessPoints/T3Channel')
+set('Protocol','t3')
+set('ListenAddress','')
+set('ListenPort',$channelPort)
+set('PublicAddress', '$AppGWHostName')
+set('PublicPort', $channelPort)
+set('Enabled','true')
+
+cd('/Servers/$wlsServerName')
+create('HTTPChannel','NetworkAccessPoint')
+cd('/Servers/$wlsServerName/NetworkAccessPoints/HTTPChannel')
+set('Protocol','http')
+set('ListenAddress','')
+set('ListenPort',$channelPort)
+set('PublicAddress', '$AppGWHostName')
+set('PublicPort', $channelPort)
+set('Enabled','true')
+
+save()
+resolve()
+activate()
+destroyEditSession("$wlsServerName")
+disconnect()
+EOF
+}
 
 #Function to create Admin Only Domain
 function create_adminSetup()
@@ -656,6 +715,10 @@ function create_managedSetup(){
     create_managed_model
     createMachinePyScript
     createEnrollServerPyScript
+    if [ -n "$AppGWHostName" ];
+    then
+        createChannelPortsOnManagedServer
+    fi
     echo "Completed managed server model files"
     sudo chown -R $username:$groupname $DOMAIN_PATH
     runuser -l oracle -c "export JAVA_HOME=$JDK_PATH/jdk1.8.0_131 ; $DOMAIN_PATH/weblogic-deploy/bin/createDomain.sh -oracle_home $INSTALL_PATH/Oracle/Middleware/Oracle_Home -domain_parent $DOMAIN_PATH  -domain_type WLS -model_file $DOMAIN_PATH/managed-domain.yaml" 
@@ -675,6 +738,16 @@ function create_managedSetup(){
     if [[ $? != 0 ]]; then
          echo "Error : Adding server $wlsServerName failed"
          exit 1
+    fi
+
+    if [ -n "$AppGWHostName" ];
+    then
+        echo "Creating T3 Channel on managed server $wlsServerName"
+        runuser -l oracle -c "export JAVA_HOME=$JDK_PATH/jdk1.8.0_131 ; $INSTALL_PATH/Oracle/Middleware/Oracle_Home/oracle_common/common/bin/wlst.sh $DOMAIN_PATH/create-t3-channel.py"
+        if [[ $? != 0 ]]; then
+            echo "Error : Creating T3 Channel on Managed server $wlsServerName failed"
+            exit 1
+        fi
     fi
 }
 
@@ -816,7 +889,18 @@ function enabledAndStartNodeManagerService()
 CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export BASE_DIR="$(readlink -f ${CURR_DIR})"
 
-if [ $# -ne 12 ]
+# store arguments in a special array 
+args=("$@") 
+# get number of elements 
+ELEMENTS=${#args[@]} 
+ 
+# echo each element in array  
+# for loop 
+for (( i=0;i<$ELEMENTS;i++)); do 
+    echo "ARG[${args[${i}]}]"
+done
+
+if [ $# -le 11 ]
 then
     usage
     exit 1
@@ -834,13 +918,13 @@ export vmNamePrefix=${9}
 export maxDynamicClusterSize=${10}
 export dynamicClusterSize=${11}
 export adminVMName=${12}
-
-echo "Arguments passed: acceptOTNLicenseAgreement=${1}, otnusername=${2},otnpassword=${3},wlsDomainName=${4},wlsUserName=${5},wlsPassword=${6},managedServerPrefix=${7},indexValue=${8},vmNamePrefix=${9},maxDynamicClusterSize=${10},dynamicClusterSize=${11},adminVMName=${12}"
+export AppGWHostName=${13}
 
 # Always index 0 is set as admin server
 export wlsAdminPort=7001
 export wlsSSLAdminPort=7002
 export wlsManagedPort=8001
+export channelPort=8501
 export wlsAdminURL="$adminVMName:$wlsAdminPort"
 export wlsClusterName="cluster1"
 export dynamicServerTemplate="myServerTemplate"
@@ -906,6 +990,7 @@ else
   create_managedSetup
   create_nodemanager_service
   enabledAndStartNodeManagerService
+  wait_for_admin
   start_cluster
 fi
 cleanup
