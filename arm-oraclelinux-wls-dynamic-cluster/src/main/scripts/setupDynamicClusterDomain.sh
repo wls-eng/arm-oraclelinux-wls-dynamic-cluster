@@ -479,19 +479,19 @@ EOF
     if [ -n "$AppGWHostName" ];
     then
         cat <<EOF >>$DOMAIN_PATH/managed-domain.yaml
-           NetworkAccessPoint:
-               T3Channel:
-                   Protocol: "t3"
-                   ListenAddress: None
-                   ListenPort: $channelPort
-                   PublicAddress: "$AppGWHostName"
-                   PublicPort: $channelPort
-               HTTPChannel:
-                   Protocol: "http"
-                   ListenAddress: None
-                   ListenPort: $channelPort
-                   PublicAddress: "$AppGWHostName"
-                   PublicPort: $channelPort
+            NetworkAccessPoint:
+                T3Channel:
+                    Protocol: "t3"
+                    ListenAddress: None
+                    ListenPort: $channelPort
+                    PublicAddress: "$AppGWHostName"
+                    PublicPort: $channelPort
+                HTTPChannel:
+                    Protocol: "http"
+                    ListenAddress: None
+                    ListenPort: $channelPort
+                    PublicAddress: "$AppGWHostName"
+                    PublicPort: $channelPort
 EOF
     fi
     cat <<EOF >>$DOMAIN_PATH/managed-domain.yaml
