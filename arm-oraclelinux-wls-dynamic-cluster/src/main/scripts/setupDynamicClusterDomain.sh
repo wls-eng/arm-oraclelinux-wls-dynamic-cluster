@@ -431,7 +431,7 @@ topology:
                 ServerTemplate: '${dynamicServerTemplate}'
                 DynamicClusterSize: ${dynamicClusterSize}
                 MaxDynamicClusterSize: ${maxDynamicClusterSize}
-                CalculatedListenPorts: true
+                CalculatedListenPorts: false
                 CalculatedMachineNames: true
                 ServerNamePrefix: "${managedServerPrefix}"
                 MachineNameMatchExpression: "$machineNamePrefix-${vmNamePrefix}*"
