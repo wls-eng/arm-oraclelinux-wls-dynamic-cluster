@@ -5,6 +5,9 @@
 		"appGatewaySSLCertificateData": {
 			"type": "string"
 		},
+		"appGatewaySSLCertificatePassword": {
+			"type": "string"
+		},
 		"gatewayPublicIPAddressName": {
 			"type": "string",
 			"defaultValue": "gatewayPublicIP",
@@ -137,7 +140,8 @@
 					{
 						"name": "appGwSslCertificate",
 						"properties": {
-							"data": "[parameters('appGatewaySSLCertificateData')]"
+						    "data": "[parameters('appGatewaySSLCertificateData')]",
+						    "password": "[parameters('appGatewaySSLCertificatePassword')]"                                                    
 						}
 					}
 				],
