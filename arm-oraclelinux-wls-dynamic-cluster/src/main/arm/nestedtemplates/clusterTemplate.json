@@ -16,11 +16,11 @@
             }
         },
         "_artifactsLocationSasToken": {
+            "defaultValue": "",
             "type": "securestring",
             "metadata": {
                 "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
-            },
-            "defaultValue": ""
+            }
         },
         "acceptOTNLicenseAgreement": {
             "type": "string",
@@ -35,14 +35,15 @@
             }
         },
         "adminUsername": {
+            "defaultValue": "weblogic",
             "type": "string",
             "metadata": {
                 "description": "User name for the Virtual Machine."
             }
         },
         "adminVMName": {
-            "type": "string",
             "defaultValue": "adminVM",
+            "type": "string",
             "metadata": {
                 "description": "Admin Server hosting VM name."
             }
@@ -65,29 +66,29 @@
             }
         },
         "enableAppGateway": {
-            "type": "bool",
             "defaultValue": false,
+            "type": "bool",
             "metadata": {
                 "description": "If true, deploy the necessary resoucres required for the App Gateway"
             }
         },
         "dynamicClusterSize": {
-            "type": "int",
             "defaultValue": 2,
+            "type": "int",
             "metadata": {
                 "description": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
             }
         },
         "dnsNameforApplicationGateway": {
+            "defaultValue": "wlsgw",
             "type": "string",
-            "defaultValue": "wlsappgw",
             "metadata": {
                 "description": "DNS for ApplicationGateway"
             }
         },
         "gatewayPublicIPAddressName": {
-            "type": "string",
             "defaultValue": "gatewayPublicIP",
+            "type": "string",
             "metadata": {
                 "description": "Public IP Name for the Application Gateway"
             }

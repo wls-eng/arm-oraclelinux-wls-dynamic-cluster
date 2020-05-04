@@ -22,19 +22,19 @@
             }
         },
         "aadsPortNumber": {
-            "type": "string",
             "defaultValue": "636",
+            "type": "string",
             "metadata": {
                 "description": "Accessible port of the LDAP server."
             }
         },
         "addsPublicIP": {
-            "type": "string",
-            "defaultValue": "The LDAP server public IP address"
+            "defaultValue": "The LDAP server public IP address",
+            "type": "string"
         },
         "addsServerHost": {
+            "defaultValue": "",
             "type": "string",
-            "defaultValue": "ldaps.example.com",
             "metadata": {
                 "description": "The LDAP server host."
             }
@@ -59,49 +59,50 @@
             }
         },
         "wlsDomainName": {
+            "defaultValue": "wlsd",
             "type": "string",
             "metadata": {
                 "description": "Provide Weblogic domain name"
             }
         },
         "wlsLDAPGroupBaseDN": {
-            "type": "string",
             "defaultValue": "null",
+            "type": "string",
             "metadata": {
                 "description": "The base distinguished name (DN) of the tree in the LDAP directory that contains groups."
             }
         },
         "wlsLDAPPrincipal": {
-            "type": "string",
             "defaultValue": "null",
+            "type": "string",
             "metadata": {
                 "description": "The Distinguished Name (DN) of the LDAP user that WebLogic Server should use to connect to the LDAP server."
             }
         },
         "wlsLDAPPrincipalPassword": {
-            "type": "securestring",
             "defaultValue": "[newGuid()]",
+            "type": "securestring",
             "metadata": {
                 "description": "The credential (usually a password) used to connect to the LDAP server."
             }
         },
         "wlsLDAPProviderName": {
-            "type": "string",
             "defaultValue": "AzureActiveDirectoryProvider",
+            "type": "string",
             "metadata": {
                 "description": "The value used for creating authentication provider name of WebLogic Server."
             }
         },
         "wlsLDAPSSLCertificate": {
-            "type": "string",
             "defaultValue": "null",
+            "type": "string",
             "metadata": {
                 "description": "Client certificate that will be imported to trust store of SSL."
             }
         },
         "wlsLDAPUserBaseDN": {
-            "type": "string",
             "defaultValue": "null",
+            "type": "string",
             "metadata": {
                 "description": "The base distinguished name (DN) of the tree in the LDAP directory that contains users."
             }
@@ -113,6 +114,7 @@
             }
         },
         "wlsUserName": {
+            "defaultValue": "weblogic",
             "type": "string",
             "metadata": {
                 "description": "Username for your Weblogic domain name"

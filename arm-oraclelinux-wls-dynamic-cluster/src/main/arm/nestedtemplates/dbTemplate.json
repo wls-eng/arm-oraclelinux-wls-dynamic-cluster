@@ -16,46 +16,50 @@
             }
         },
         "_artifactsLocationSasToken": {
+            "defaultValue": "",
             "type": "securestring",
             "metadata": {
                 "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
-            },
-            "defaultValue": ""
+            }
         },
         "adminVMName": {
-            "type": "string",
             "defaultValue": "adminVM",
+            "type": "string",
             "metadata": {
                 "description": "Admin Server hosting VM name."
             }
         },
         "databaseType": {
+            "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "One of the supported database types"
             }
         },
         "dsConnectionURL": {
+            "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "JDBC Connection String"
             }
         },
         "dsUser": {
+            "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "Userid of Database"
             }
         },
         "dsPassword": {
+            "defaultValue": "",
             "type": "securestring",
             "metadata": {
                 "description": "Password for Database"
             }
         },
         "jdbcDataSourceName": {
-            "type": "string",
             "defaultValue": "",
+            "type": "string",
             "metadata": {
                 "description": "JNDI Name for JDBC Datasource"
             }
@@ -67,6 +71,7 @@
             }
         },
         "wlsUserName": {
+            "defaultValue": "weblogic",
             "type": "string",
             "metadata": {
                 "description": "Username for your Weblogic domain name"
