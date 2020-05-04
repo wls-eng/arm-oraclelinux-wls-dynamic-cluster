@@ -35,7 +35,7 @@
         },
         "addsServerHost": {
             "type": "string",
-            "defaultValue": "ldaps.example.com",
+            "defaultValue": "",
             "metadata": {
                 "description": "The LDAP server host."
             }
@@ -67,6 +67,7 @@
             }
         },
         "databaseType": {
+            "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "One of the supported database types"
@@ -87,18 +88,21 @@
             }
         },
         "dsConnectionURL": {
+            "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "JDBC Connection String"
             }
         },
         "dsUser": {
+            "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "Userid of Database"
             }
         },
         "dsPassword": {
+            "defaultValue": "",
             "type": "securestring",
             "metadata": {
                 "description": "Password for Database"
