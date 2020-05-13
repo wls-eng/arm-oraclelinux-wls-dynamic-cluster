@@ -249,110 +249,6 @@
         ],
         "steps": [
             {
-                "name": "section_appGateway",
-                "type": "Microsoft.Common.Section",
-                "label": "Azure Application Gateway",
-                "elements": [
-                    {
-                        "name": "connectToAGText",
-                        "type": "Microsoft.Common.TextBlock",
-                        "visible": true,
-                        "options": {
-                            "text": "Selecting 'Yes' here will cause the template to provision an Azure Application Gateway (WAF_v2 or later SKU), a public IP, and a backend pool consisting of the worker nodes in the cluster.  Further configuration may be necessary after deployment.",
-                            "link": {
-                                "label": "Learn more",
-                                "uri": "https://docs.microsoft.com/en-us/azure/application-gateway/overview"
-                            }
-                        }
-                    },
-                    {
-                        "name": "enableAppGateway",
-                        "type": "Microsoft.Common.OptionsGroup",
-                        "label": "Connect to Azure Application Gateway?",
-                        "defaultValue": "No",
-                        "toolTip": "Select 'Yes' to cause an Azure Application Gateway to be created as the load balancer for the cluster.",
-                        "constraints": {
-                            "allowedValues": [
-                                {
-                                    "label": "Yes",
-                                    "value": true
-                                },
-                                {
-                                    "label": "No",
-                                    "value": false
-                                }
-                            ],
-                            "required": false
-                        }
-                    },
-                    {
-                        "name": "keyVaultText",
-                        "type": "Microsoft.Common.TextBlock",
-                        "visible": "[steps('section_appGateway').enableAppGateway]",
-                        "options": {
-                            "text": "App Gateway integration requires an SSL Certificate to enable SSL termination at the gateway.  End-to-end SSL encryption is not supported by the template.  The template will look for the certificate and its password in the Azure KeyVault specified here.",
-                            "link": {
-                                "label": "Learn more",
-                                "uri": "https://github.com/andrewatfornax/tech-articles/blob/6985d626e9815daf63f705dbe9bd570e38cc0297/azure-app-gateway-ssl-arm-template.md"
-                            }
-                        }
-                    },
-                    {
-                        "name": "keyVaultResourceGroup",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Resource group name in current subscription containing the KeyVault",
-                        "defaultValue": "",
-                        "toolTip": "Use only letters and numbers",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
-                        },
-                        "visible": "[steps('section_appGateway').enableAppGateway]"
-                    },
-                    {
-                        "name": "keyVaultName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Name of the Azure KeyVault containing secrets for the Certificate for SSL Termination",
-                        "defaultValue": "",
-                        "toolTip": "Use only letters and numbers",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
-                        },
-                        "visible": "[steps('section_appGateway').enableAppGateway]"
-                    },
-                    {
-                        "name": "keyVaultSSLCertDataSecretName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data",
-                        "defaultValue": "",
-                        "toolTip": "Use only letters and numbers",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
-                        },
-                        "visible": "[steps('section_appGateway').enableAppGateway]"
-                    },
-                    {
-                        "name": "keyVaultSSLCertPasswordSecretName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate",
-                        "defaultValue": "",
-                        "toolTip": "Use only letters and numbers",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
-                        },
-                        "visible": "[steps('section_appGateway').enableAppGateway]"
-                    }
-                ],
-                "visible": true
-            },
-            {
                 "name": "section_database",
                 "type": "Microsoft.Common.Section",
                 "label": "Database",
@@ -668,12 +564,7 @@
             "dsUser": "[steps('section_database').databaseConnectionInfo.dsUser]",
             "dynamicClusterSize": "[int(basics('basicsRequired').dynamicClusterSize)]",
             "enableAAD": "[bool(steps('section_aad').enableAAD)]",
-            "enableAppGateway": "[steps('section_appGateway').enableAppGateway]",
             "jdbcDataSourceName": "[steps('section_database').databaseConnectionInfo.jdbcDataSourceName]",
-            "keyVaultName": "[steps('section_appGateway').keyVaultName]",
-            "keyVaultResourceGroup": "[steps('section_appGateway').keyVaultResourceGroup]",
-            "keyVaultSSLCertDataSecretName": "[steps('section_appGateway').keyVaultSSLCertDataSecretName]",
-            "keyVaultSSLCertPasswordSecretName": "[steps('section_appGateway').keyVaultSSLCertPasswordSecretName]",
             "managedServerPrefix": "[basics('basicsOptional').managedServerPrefix]",
             "maxDynamicClusterSize": "[int(basics('basicsRequired').maxDynamicClusterSize)]",
             "otnAccountPassword": "[basics('basicsRequired').otnAccountPassword]",
