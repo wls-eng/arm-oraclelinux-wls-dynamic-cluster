@@ -1,5 +1,5 @@
 #Function to output message to StdErr
-function echo_stderr ()
+function echo_stderr()
 {
     echo "$@" >&2
 }
@@ -253,6 +253,38 @@ function restartAdminServerService()
      sudo systemctl start wls_admin
 }
 
+function restartManagedServers()
+{
+    echo "Restart managed servers"
+    cat <<EOF >${SCRIPT_PWD}/restart-managedServer.py
+connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+servers=cmo.getServers()
+domainRuntime()
+print "Restart the servers which are in RUNNING status"
+for server in servers:
+    bean="/ServerLifeCycleRuntimes/"+server.getName()
+    serverbean=getMBean(bean)
+    if (serverbean.getState() in ("RUNNING")) and (server.getName() != '${wlsAdminServerName}'):
+        try:
+            print "Stop the Server ",server.getName()
+            shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
+            print "Start the Server ",server.getName()
+            start(server.getName(),server.getType())
+        except:
+            print "Failed restarting managed server ", server.getName()
+            dumpStack()
+serverConfig()
+disconnect()
+EOF
+    . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
+    java $WLST_ARGS weblogic.WLST ${SCRIPT_PWD}/restart-managedServer.py 
+
+    if [[ $? != 0 ]]; then
+    echo "Error : Fail to restart managed server to sync up aad configuration."
+    exit 1
+    fi
+}
+
 #This function to check admin server status 
 function wait_for_admin()
 {
@@ -336,4 +368,6 @@ restartAdminServerService
 echo "Waiting for admin server to be available"
 wait_for_admin
 echo "Weblogic admin server is up and running"
+
+restartManagedServers
 
