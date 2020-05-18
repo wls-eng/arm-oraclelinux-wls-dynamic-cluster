@@ -205,7 +205,6 @@
         "name_dnsNameforApplicationGateway": "[concat(parameters('dnsNameforApplicationGateway'), take(replace(parameters('guidValue'),'-',''),6))]",
         "name_networkSecurityGroup": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
         "name_nic": "NIC",
-        "name_oradownScript": "oradown.sh",
         "name_outputAdminHost": "[concat(parameters('adminVMName'),variables('name_publicIPAddress'))]",
         "name_publicIPAddress": "PublicIP",
         "name_scriptFile": "setupDynamicClusterDomain.sh",
