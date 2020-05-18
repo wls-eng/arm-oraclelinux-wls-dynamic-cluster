@@ -23,11 +23,11 @@
                 "description": "Accessible port of the LDAP server."
             }
         },
-        "addsPublicIP": {
+        "aadsPublicIP": {
             "defaultValue": "",
             "type": "string"
         },
-        "addsServerHost": {
+        "aadsServerHost": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
@@ -54,7 +54,7 @@
                 "description": "Admin Server hosting VM name."
             }
         },
-        "connectToDatabase": {
+        "enableDB": {
             "defaultValue": false,
             "type": "bool",
             "metadata": {
@@ -89,14 +89,14 @@
                 "description": "JDBC Connection String"
             }
         },
-        "dsUser": {
+        "dbUser": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "Userid of Database"
             }
         },
-        "dsPassword": {
+        "dbPassword": {
             "defaultValue": "",
             "type": "securestring",
             "metadata": {
@@ -450,7 +450,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "name": "dbLinkedTemplate",
-            "condition": "[parameters('connectToDatabase')]",
+            "condition": "[parameters('enableDB')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'keyVaultLinkedAppGatewayTemplate')]"
             ],
@@ -476,11 +476,11 @@
                     "databaseType": {
                         "value": "[parameters('databaseType')]"
                     },
-                    "dsUser": {
-                        "value": "[parameters('dsUser')]"
+                    "dbUser": {
+                        "value": "[parameters('dbUser')]"
                     },
-                    "dsPassword": {
-                        "value": "[parameters('dsPassword')]"
+                    "dbPassword": {
+                        "value": "[parameters('dbPassword')]"
                     },
                     "jdbcDataSourceName": {
                         "value": "[parameters('jdbcDataSourceName')]"
@@ -521,11 +521,11 @@
                     "aadsPortNumber": {
                         "value": "[parameters('aadsPortNumber')]"
                     },
-                    "addsPublicIP": {
-                        "value": "[parameters('addsPublicIP')]"
+                    "aadsPublicIP": {
+                        "value": "[parameters('aadsPublicIP')]"
                     },
-                    "addsServerHost": {
-                        "value": "[parameters('addsServerHost')]"
+                    "aadsServerHost": {
+                        "value": "[parameters('aadsServerHost')]"
                     },
                     "adminPassword": {
                         "value": "[parameters('adminPasswordOrKey')]"

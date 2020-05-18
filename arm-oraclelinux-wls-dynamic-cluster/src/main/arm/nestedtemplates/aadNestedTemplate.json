@@ -28,11 +28,11 @@
                 "description": "Accessible port of the LDAP server."
             }
         },
-        "addsPublicIP": {
+        "aadsPublicIP": {
             "defaultValue": "The LDAP server public IP address",
             "type": "string"
         },
-        "addsServerHost": {
+        "aadsServerHost": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
@@ -122,7 +122,7 @@
         }
     },
     "variables": {
-        "const_aadParameters": "[concat(parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsLDAPProviderName'), ' ',  parameters('addsServerHost'), ' ', parameters('aadsPortNumber'), ' ', concat('\"',parameters('wlsLDAPPrincipal'),'\"'), ' ', parameters('wlsLDAPPrincipalPassword'), ' ', concat('\"',parameters('wlsLDAPUserBaseDN'),'\"'), ' ', concat('\"',parameters('wlsLDAPGroupBaseDN'),'\"'), ' ', variables('const_wlsHome'),' ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsLDAPSSLCertificate'), ' ', parameters('addsPublicIP'), ' ', parameters('adminPassword'), ' ', variables('const_adminServerName'))]",
+        "const_aadParameters": "[concat(parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('wlsDomainName'),' ',parameters('wlsLDAPProviderName'), ' ',  parameters('aadsServerHost'), ' ', parameters('aadsPortNumber'), ' ', concat('\"',parameters('wlsLDAPPrincipal'),'\"'), ' ', parameters('wlsLDAPPrincipalPassword'), ' ', concat('\"',parameters('wlsLDAPUserBaseDN'),'\"'), ' ', concat('\"',parameters('wlsLDAPGroupBaseDN'),'\"'), ' ', variables('const_wlsHome'),' ',parameters('adminVMName'),' ',variables('const_wlsAdminPort'),' ',parameters('wlsLDAPSSLCertificate'), ' ', parameters('aadsPublicIP'), ' ', parameters('adminPassword'), ' ', variables('const_adminServerName'))]",
         "const_adminServerName": "admin",
         "const_wlsAdminPort": "7001",
         "const_wlsHome": "/u01/app/wls/install/oracle/middleware/oracle_home",
