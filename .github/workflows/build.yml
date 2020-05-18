@@ -2,7 +2,7 @@ name: Build and Test
 on: 
   push:
     branches:
-      - master
+      - develop
   pull_request:
     branches:
       - master
@@ -35,7 +35,7 @@ jobs:
       - name: Build azure-javaee-iaas
         run: mvn -DskipTests clean install --file azure-javaee-iaas/pom.xml
       - name: Built and test arm-oraclelinux-wls-dynamic-cluster        
-        run: mvn -Ptemplate-validation-tests clean install --file arm-oraclelinux-wls-dynamic-cluster/pom.xml
+        run: mvn -Ptemplate-validation-tests clean install -Ddev --file arm-oraclelinux-wls-dynamic-cluster/pom.xml
 
       - name: Get version information from arm-oraclelinux-wls-dynamic-cluster/pom.xml
         id: version
