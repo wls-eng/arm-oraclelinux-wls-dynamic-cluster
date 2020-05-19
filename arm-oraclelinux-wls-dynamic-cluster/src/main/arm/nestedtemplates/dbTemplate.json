@@ -36,11 +36,11 @@
                 "description": "One of the supported database types"
             }
         },
-        "dsConnectionURL": {
+        "dbPassword": {
             "defaultValue": "",
-            "type": "string",
+            "type": "securestring",
             "metadata": {
-                "description": "JDBC Connection String"
+                "description": "Password for Database"
             }
         },
         "dbUser": {
@@ -50,11 +50,11 @@
                 "description": "Userid of Database"
             }
         },
-        "dbPassword": {
+        "dsConnectionURL": {
             "defaultValue": "",
-            "type": "securestring",
+            "type": "string",
             "metadata": {
-                "description": "Password for Database"
+                "description": "JDBC Connection String"
             }
         },
         "jdbcDataSourceName": {
@@ -83,7 +83,6 @@
                 "description": "Password for your Weblogic domain name"
             }
         }
-
     },
     "variables": {
         "const_singleQuote": "'",
@@ -145,7 +144,7 @@
                     ]
                 }
             }
-        }        
+        }
     ],
     "outputs": {
         "artifactsLocationPassedIn": {

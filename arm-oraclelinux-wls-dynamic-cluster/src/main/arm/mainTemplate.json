@@ -54,18 +54,25 @@
                 "description": "Admin Server hosting VM name."
             }
         },
-        "enableDB": {
-            "defaultValue": false,
-            "type": "bool",
-            "metadata": {
-                "description": "If true, use the supplied parameters to connect the cluster to a pre-provisioned database."
-            }
-        },
         "databaseType": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "One of the supported database types"
+            }
+        },
+        "dbPassword": {
+            "defaultValue": "",
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for Database"
+            }
+        },
+        "dbUser": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Userid of Database"
             }
         },
         "dnsLabelPrefix": {
@@ -89,20 +96,6 @@
                 "description": "JDBC Connection String"
             }
         },
-        "dbUser": {
-            "defaultValue": "",
-            "type": "string",
-            "metadata": {
-                "description": "Userid of Database"
-            }
-        },
-        "dbPassword": {
-            "defaultValue": "",
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for Database"
-            }
-        },
         "dynamicClusterSize": {
             "defaultValue": 2,
             "type": "int",
@@ -122,6 +115,13 @@
             "type": "bool",
             "metadata": {
                 "description": "If true, deploy an Azure App Gateway in front of the nodes of the cluster"
+            }
+        },
+        "enableDB": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "If true, use the supplied parameters to connect the cluster to a pre-provisioned database."
             }
         },
         "gatewayPublicIPAddressName": {
@@ -216,12 +216,12 @@
             }
         },
         "usePreviewImage": {
-			"type": "bool",
-			"defaultValue": true,
-			"metadata": {
-				"description": "Bool value, if it's set to true, will deploy with preview weblogic image."
-			}
-		},
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Bool value, if it's set to true, will deploy with preview weblogic image."
+            }
+        },
         "vmSizeSelect": {
             "defaultValue": "Standard_A1",
             "type": "string",
@@ -284,17 +284,17 @@
                 "description": "The base distinguished name (DN) of the tree in the LDAP directory that contains users."
             }
         },
+        "wlsPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for your Weblogic domain name"
+            }
+        },
         "wlsUserName": {
             "defaultValue": "weblogic",
             "type": "string",
             "metadata": {
                 "description": "Username for your Weblogic domain name"
-            }
-        },
-        "wlsPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for your Weblogic domain name"
             }
         }
     },
@@ -352,14 +352,14 @@
                     "dnsNameforApplicationGateway": {
                         "value": "[parameters('dnsNameforApplicationGateway')]"
                     },
+                    "dynamicClusterSize": {
+                        "value": "[parameters('dynamicClusterSize')]"
+                    },
                     "enableAppGateway": {
                         "value": "[parameters('enableAppGateway')]"
                     },
                     "gatewayPublicIPAddressName": {
                         "value": "[parameters('gatewayPublicIPAddressName')]"
-                    },
-                    "dynamicClusterSize": {
-                        "value": "[parameters('dynamicClusterSize')]"
                     },
                     "linuxImageOfferSKU": {
                         "value": "[parameters('linuxImageOfferSKU')]"
@@ -470,17 +470,17 @@
                     "adminVMName": {
                         "value": "[parameters('adminVMName')]"
                     },
-                    "dsConnectionURL": {
-                        "value": "[parameters('dsConnectionURL')]"
-                    },
                     "databaseType": {
                         "value": "[parameters('databaseType')]"
+                    },
+                    "dbPassword": {
+                        "value": "[parameters('dbPassword')]"
                     },
                     "dbUser": {
                         "value": "[parameters('dbUser')]"
                     },
-                    "dbPassword": {
-                        "value": "[parameters('dbPassword')]"
+                    "dsConnectionURL": {
+                        "value": "[parameters('dsConnectionURL')]"
                     },
                     "jdbcDataSourceName": {
                         "value": "[parameters('jdbcDataSourceName')]"
