@@ -9,13 +9,13 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./setDynamicClusterDomain.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName> <oracleHome>"
+  echo_stderr "./setDynamicClusterDomain.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName> <oracleHome> <storageAccountName> <storageAccountKey> <mountpointPath>"
 }
 
 function installUtilities()
 {
-    echo "Installing zip unzip wget vnc-server rng-tools"
-    sudo yum install -y zip unzip wget vnc-server rng-tools
+    echo "Installing zip unzip wget vnc-server rng-tools cifs-utils"
+    sudo yum install -y zip unzip wget vnc-server rng-tools cifs-utils
 
     #Setting up rngd utils
     sudo systemctl status rngd
@@ -72,6 +72,24 @@ function validateInput()
     echo_stderr "oracleHome is required"
     exit 1
   fi
+
+  if [ -z "$storageAccountName" ];
+    then 
+        echo_stderr "storageAccountName is required. "
+        exit 1
+    fi
+    
+    if [ -z "$storageAccountKey" ];
+    then 
+        echo_stderr "storageAccountKey is required. "
+        exit 1
+    fi
+    
+    if [ -z "$mountpointPath" ];
+    then 
+        echo_stderr "mountpointPath is required. "
+        exit 1
+    fi
 }
 
 #Function to cleanup all temporary files
@@ -240,6 +258,9 @@ function create_adminSetup()
        echo "Error : Admin setup failed"
        exit 1
     fi
+
+    # For issue https://github.com/wls-eng/arm-oraclelinux-wls/issues/89
+    copySerializedSystemIniFileToShare
 }
 
 #Function to start admin server
@@ -348,6 +369,9 @@ function create_managedSetup(){
        exit 1
     fi
     wait_for_admin
+
+    # For issue https://github.com/wls-eng/arm-oraclelinux-wls/issues/89
+    getSerializedSystemIniFileFromShare
     echo "Adding machine to managed server $wlsServerName"
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST $DOMAIN_PATH/add-machine.py"
     if [[ $? != 0 ]]; then
@@ -452,6 +476,93 @@ function enabledAndStartNodeManagerService()
   done
 }
 
+function updateNetworkRules()
+{
+    # for Oracle Linux 7.3, 7.4, iptable is not running.
+    if [ -z `command -v firewall-cmd` ]; then
+        return 0
+    fi
+    
+    # for Oracle Linux 7.6, open weblogic ports
+    tag=$1
+    if [ ${tag} == 'admin' ]; then
+        echo "update network rules for admin server"
+        sudo firewall-cmd --zone=public --add-port=$wlsAdminPort/tcp
+        sudo firewall-cmd --zone=public --add-port=$wlsSSLAdminPort/tcp
+        sudo firewall-cmd --zone=public --add-port=$nmPort/tcp
+    else
+        maxManagedIndex=1
+        echo "update network rules for managed server"
+        # Port is dynamic betweent 8002 to 8001+dynamicClusterSize, open port from 8002 to 8001+dynamicClusterSize for managed machines.
+        while [ $maxManagedIndex -le $dynamicClusterSize ]
+        do
+          managedPort=$(($wlsManagedPort + $maxManagedIndex))
+          sudo firewall-cmd --zone=public --add-port=$managedPort/tcp
+          maxManagedIndex=$(($maxManagedIndex + 1))
+        done
+        
+        sudo firewall-cmd --zone=public --add-port=$nmPort/tcp
+    fi
+
+    sudo firewall-cmd --runtime-to-permanent
+    sudo systemctl restart firewalld
+}
+
+# Mount the Azure file share on all VMs created
+function mountFileShare()
+{
+  echo "Creating mount point"
+  echo "Mount point: $mountpointPath"
+  sudo mkdir -p $mountpointPath
+  if [ ! -d "/etc/smbcredentials" ]; then
+    sudo mkdir /etc/smbcredentials
+  fi
+  if [ ! -f "/etc/smbcredentials/${storageAccountName}.cred" ]; then
+    echo "Crearing smbcredentials"
+    echo "username=$storageAccountName >> /etc/smbcredentials/${storageAccountName}.cred"
+    echo "password=$storageAccountKey >> /etc/smbcredentials/${storageAccountName}.cred"
+    sudo bash -c "echo "username=$storageAccountName" >> /etc/smbcredentials/${storageAccountName}.cred"
+    sudo bash -c "echo "password=$storageAccountKey" >> /etc/smbcredentials/${storageAccountName}.cred"
+  fi
+  echo "chmod 600 /etc/smbcredentials/${storageAccountName}.cred"
+  sudo chmod 600 /etc/smbcredentials/${storageAccountName}.cred
+  echo "//${storageAccountName}.file.core.windows.net/wlsshare $mountpointPath cifs nofail,vers=2.1,credentials=/etc/smbcredentials/${storageAccountName}.cred ,dir_mode=0777,file_mode=0777,serverino"
+  sudo bash -c "echo \"//${storageAccountName}.file.core.windows.net/wlsshare $mountpointPath cifs nofail,vers=2.1,credentials=/etc/smbcredentials/${storageAccountName}.cred ,dir_mode=0777,file_mode=0777,serverino\" >> /etc/fstab"
+  echo "mount -t cifs //${storageAccountName}.file.core.windows.net/wlsshare $mountpointPath -o vers=2.1,credentials=/etc/smbcredentials/${storageAccountName}.cred,dir_mode=0777,file_mode=0777,serverino"
+  sudo mount -t cifs //${storageAccountName}.file.core.windows.net/wlsshare $mountpointPath -o vers=2.1,credentials=/etc/smbcredentials/${storageAccountName}.cred,dir_mode=0777,file_mode=0777,serverino
+  if [[ $? != 0 ]];
+  then
+         echo "Failed to mount //${storageAccountName}.file.core.windows.net/wlsshare $mountpointPath"
+	 exit 1
+  fi
+}
+
+# Copy SerializedSystemIni.dat file from admin server vm to share point
+function copySerializedSystemIniFileToShare()
+{
+  runuser -l oracle -c "cp ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat ${mountpointPath}/."
+  ls -lt ${mountpointPath}/SerializedSystemIni.dat
+  if [[ $? != 0 ]]; 
+  then
+      echo "Failed to copy ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat"
+      exit 1
+  fi
+}
+
+# Get SerializedSystemIni.dat file from share point to managed server vm
+function getSerializedSystemIniFileFromShare()
+{
+  runuser -l oracle -c "mv ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat.backup"
+  runuser -l oracle -c "cp ${mountpointPath}/SerializedSystemIni.dat ${DOMAIN_PATH}/${wlsDomainName}/security/."
+  ls -lt ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat
+  if [[ $? != 0 ]]; 
+  then
+      echo "Failed to get ${mountpointPath}/SerializedSystemIni.dat"
+      exit 1
+  fi
+  runuser -l oracle -c "chmod 640 ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat"
+}
+
 #main script starts here
 
 CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -468,7 +579,7 @@ for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 10 ]
+if [ $# -ne 13 ]
 then
     usage
     exit 1
@@ -484,8 +595,9 @@ export maxDynamicClusterSize=${7}
 export dynamicClusterSize=${8}
 export adminVMName=${9}
 export oracleHome=${10}
-
-echo "Arguments passed: wlsDomainName=${1},wlsUserName=${2},wlsPassword=${3},managedServerPrefix=${4},indexValue=${5},vmNamePrefix=${6},maxDynamicClusterSize=${7},dynamicClusterSize=${8},adminVMName=${9},oracleHome=${10}"
+export storageAccountName=${11}
+export storageAccountKey=${12}
+export mountpointPath=${13}
 
 # Always index 0 is set as admin server
 export wlsAdminPort=7001
@@ -509,25 +621,28 @@ then
    export wlsServerName="admin"
 else
    serverIndex=$indexValue
-   export wlsServerName="$managedServerPrefix$serverIndex"   
+   export wlsServerName="$managedServerPrefix$serverIndex"
 fi
 
 export SCRIPT_PWD=`pwd`
 cleanup
 
 installUtilities
+mountFileShare
 
 if [ $wlsServerName == "admin" ];
 then
+  updateNetworkRules "admin"
   create_adminSetup
   admin_boot_setup
   create_adminserver_service
   enableAndStartAdminServerService
-  wait_for_admin
+  wait_for_admin  
 else
+  updateNetworkRules "managed"
   create_managedSetup
   create_nodemanager_service
   enabledAndStartNodeManagerService
-  start_cluster
+  start_cluster  
 fi
 cleanup
