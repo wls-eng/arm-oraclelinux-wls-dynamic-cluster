@@ -278,12 +278,6 @@
 			"sku": {
 				"name": "Standard_LRS",
 				"tier": "Standard"
-			},
-			"properties": {
-				"cors": {
-					"corsRules": [
-					]
-				}
 			}
 		},
 		{
