@@ -104,8 +104,9 @@ function createAADProvider_model()
     cat <<EOF >${SCRIPT_PWD}/configure-active-directory.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 try:
-   edit()
+   edit("$wlsAdminServerName")
    startEdit()
+   cd('/')
    # Configure DefaultAuthenticator.
    cd('/SecurityConfiguration/' + '${wlsDomainName}' + '/Realms/myrealm/AuthenticationProviders/DefaultAuthenticator')
    cmo.setControlFlag('SUFFICIENT')
@@ -149,11 +150,13 @@ try:
    cmo.setEnableSIDtoGroupLookupCaching(true)
 
    save()
+   resolve()
    activate()
 except:
    stopEdit('y')
    sys.exit(1)
 
+destroyEditSession("$wlsAdminServerName",force = true)
 disconnect()
 sys.exit(0)
 EOF
@@ -165,17 +168,20 @@ function createSSL_model()
 # Connect to the AdminServer.
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 try:
-   edit()
+   edit("$wlsAdminServerName")
    startEdit()
+   cd('/')
    print "set keystore to ${wlsAdminServerName}"
    cd('/Servers/${wlsAdminServerName}/SSL/${wlsAdminServerName}')
    cmo.setHostnameVerificationIgnored(true)
    save()
+   resolve()
    activate()
 except:
    stopEdit('y')
    sys.exit(1)
 
+destroyEditSession("$wlsAdminServerName",force = true)
 disconnect()
 sys.exit(0)
 EOF
@@ -187,6 +193,8 @@ function mapLDAPHostWithPublicIP()
     # change to superuser
     echo "${vituralMachinePassword}"
     sudo -S su -
+    # remove existing ip address for the same host
+    sudo sed -i '/${adServerHost}/d' /etc/hosts
     sudo echo "${wlsLDAPPublicIP}  ${adServerHost}" >> /etc/hosts
 }
 
@@ -214,6 +222,14 @@ function importAADCertificate()
     # import the key to java security 
     . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
     java_cacerts_path=${JAVA_HOME}/jre/lib/security/cacerts
+
+    # remove existing certificate.
+    queryAADTrust=$(${JAVA_HOME}/bin/keytool -list -keystore ${java_cacerts_path} -storepass changeit | grep "aadtrust")
+    if [ -n "$queryAADTrust" ];
+    then
+        sudo ${JAVA_HOME}/bin/keytool -delete -alias aadtrust -keystore ${java_cacerts_path} -storepass changeit  
+    fi
+
     sudo ${JAVA_HOME}/bin/keytool -noprompt -import -alias aadtrust -file ${addsCertificate} -keystore ${java_cacerts_path} -storepass changeit
 
 }

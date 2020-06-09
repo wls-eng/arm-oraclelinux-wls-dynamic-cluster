@@ -1,0 +1,111 @@
+{
+  "title": "Running aad sub template independently",
+  "steps": [
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/arm/nestedtemplates/aadNestedTemplate.json",
+      "line": 19,
+      "description": "Set default value to _artifactsLocationSasToken. Then we don't need to specify value to it when running the tamplate independently.",
+      "selection": {
+        "start": {
+          "line": 18,
+          "character": 10
+        },
+        "end": {
+          "line": 18,
+          "character": 36
+        }
+      }
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/arm/nestedtemplates/aadNestedTemplate.json",
+      "line": 70,
+      "description": "Set default value to \"\", to be consisent."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/arm/nestedtemplates/aadNestedTemplate.json",
+      "line": 77,
+      "description": "Set default value to \"\", to be consisent."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/arm/nestedtemplates/aadNestedTemplate.json",
+      "line": 98,
+      "description": "Set default value to \"\", to be consisent."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/arm/nestedtemplates/aadNestedTemplate.json",
+      "line": 105,
+      "description": "Set default value to \"\", to be consisent."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 107,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nSpecify the edit tree."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 109,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nSwitch to root."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 153,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nresolve inputs."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 159,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nSpecify edit tree."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 171,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nSpecify edit tree."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 173,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nSwitch to root."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 178,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nResolve inputs."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 184,
+      "description": "Fix exception that hanppens when setting up AAD after DB.\nSpecify edit tree."
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 196,
+      "description": "Run aad sub template independently.\nRemove existing ip address for the same host, to avoid multiple address for multiple aad deployments.",
+      "selection": {
+        "start": {
+          "line": 196,
+          "character": 7
+        },
+        "end": {
+          "line": 196,
+          "character": 51
+        }
+      }
+    },
+    {
+      "file": "arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/aadIntegration.sh",
+      "line": 231,
+      "description": "Run aad sub template independently. \nRemove existing aad certificate, to fix error:\nkeytool error: java.lang.Exception: Certificate not imported, alias <aadtrust> already exists.",
+      "selection": {
+        "start": {
+          "line": 226,
+          "character": 5
+        },
+        "end": {
+          "line": 231,
+          "character": 7
+        }
+      }
+    }
+  ],
+  "ref": "cd19dee8fd16f38e2fa5754c23a8692210e67db3"
+}
