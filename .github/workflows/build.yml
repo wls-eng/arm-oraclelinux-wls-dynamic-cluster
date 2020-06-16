@@ -196,6 +196,7 @@ jobs:
       - name: Prepare deployed parameters and test script            
         id: prepare-deployed-parameters-and-test-script
         run: |
+          imageUrn="${{ matrix.images }}"
           sed -i "s/#location#/$location/g; \
           s/#adminPasswordOrKey#/$wlsPassword/g; \
           s/#wlsdomainname#/$wlsDomainName/g; \
@@ -203,7 +204,7 @@ jobs:
           s/#wlspassword#/$wlsPassword/g; \
           s/#managedserverprefix#/$managedServerPrefix/g; \
           s/#adminvmname#/$adminVMName/g; \
-          s/#skuUrnVersion#/${{ matrix.images }}/g; \
+          s/#skuUrnVersion#/$imageUrn/g; \
           s/#testbranchName#/$testbranchName/g; \
           s/#otnusername#/$otnUser/g; \
           s/#otnpassword#/$otnPassword/g; \
@@ -226,7 +227,7 @@ jobs:
           s/#wlspassword#/$wlsPassword/g" \
           arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-servers-lifecycle.sh
           echo "Generate deployment parameters..."
-          bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy.sh  arm-oraclelinux-wls-dynamic-cluster/test/data $location $wlsPassword $wlsDomainName $wlsUserName $wlsPassword $managedServerPrefix $maxDynamicClusterSize $dynamicClusterSize $adminVMName ${{ matrix.images }} $testbranchName $userName
+          bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy.sh  arm-oraclelinux-wls-dynamic-cluster/test/data $location $wlsPassword $wlsDomainName $wlsUserName $wlsPassword $managedServerPrefix $maxDynamicClusterSize $dynamicClusterSize $adminVMName $imageUrn $testbranchName $userName
             
       - name: Deploy WebLogic Server Dynamic Cluster Domain offer
         id: deploy-wls-dycluster
