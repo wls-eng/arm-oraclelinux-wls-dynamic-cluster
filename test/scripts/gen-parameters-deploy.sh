@@ -10,16 +10,9 @@ managedserverprefix=$7
 maxDynamicClusterSize=$8
 dynamicClusterSize=$9
 adminvmname=${10}
-linuxImageOfferSKU=${11}
+skuUrnVersion=${11}
 testbranchName=${12}
 gitUserName=${13}
-export linuxImageVersion="1.1.1"
-
-#Use 1.1.6 for owls-122130-8u131-ol73
-if [ ${linuxImageOfferSKU} == "owls-122130-8u131-ol73" ];
-then
-    linuxImageVersion="1.1.6"
-fi
 
 
 #Clean up parameters.json
@@ -68,11 +61,8 @@ cat <<EOF > ${parametersPath}/parameters-test.json
     "location": {
       "value": "$location"
     },
-    "linuxImageOfferSKU": {
-      "value": "$linuxImageOfferSKU"
-    },
-    "linuxImageVersion": {
-      "value":"$linuxImageVersion"
+    "skuUrnVersion": {
+      "value": "$skuUrnVersion"
     },
     "_artifactsLocation": {
 
