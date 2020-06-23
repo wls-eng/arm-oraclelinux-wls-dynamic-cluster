@@ -229,6 +229,18 @@ jobs:
           echo "Generate deployment parameters..."
           bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy.sh  arm-oraclelinux-wls-dynamic-cluster/test/data $location $wlsPassword $wlsDomainName $wlsUserName $wlsPassword $managedServerPrefix $maxDynamicClusterSize $dynamicClusterSize $adminVMName $imageUrn $testbranchName $userName
             
+      - name: Accept Image Terms
+        id: accept-terms
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.azCliVersion }}
+          inlineScript: |
+            echo "accept terms for " "${{ matrix.images }}"
+            rawUrn="${{ matrix.images }}"
+            publisherAndName=$(echo ${rawUrn} | grep -o ";.*:" | sed "s/;//g")
+            imageVersion=${rawUrn##*;}
+            az vm image terms accept --urn ${publisherAndName}${sku}:${imageVersion}
+
       - name: Deploy WebLogic Server Dynamic Cluster Domain offer
         id: deploy-wls-dycluster
         uses: azure/CLI@v1
