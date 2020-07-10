@@ -118,6 +118,12 @@ domainInfo:
 topology:
    Name: "$wlsDomainName"
    AdminServerName: admin
+   Machine:
+     '$nmHost':
+         NodeManager:
+             ListenAddress: "$nmHost"
+             ListenPort: $nmPort
+             NMType : ssl
    Cluster:
         '$wlsClusterName':
             MigrationBasis: 'consensus'
@@ -636,7 +642,9 @@ then
   create_adminSetup
   admin_boot_setup
   create_adminserver_service
+  create_nodemanager_service
   enableAndStartAdminServerService
+  enabledAndStartNodeManagerService
   wait_for_admin  
 else
   updateNetworkRules "managed"

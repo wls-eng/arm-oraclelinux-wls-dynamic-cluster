@@ -32,7 +32,7 @@ env:
   git_token: ${{ secrets.GIT_TOKEN }}
   maxDynamicClusterSize: 2
   dynamicClusterSize: 1
-  wls_admin_services : "rngd wls_admin"
+  wls_admin_services : "rngd wls_admin wls_nodemanager"
   wls_managedServer_services : "rngd wls_nodemanager"
 
 jobs: 
