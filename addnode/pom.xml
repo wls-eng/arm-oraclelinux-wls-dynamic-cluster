@@ -26,7 +26,7 @@
 
     <groupId>com.oracle.weblogic.azure</groupId>
     <artifactId>arm-oraclelinux-wls-dynamic-cluster-addnode</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     
     <parent>
         <groupId>com.microsoft.azure.iaas</groupId>
@@ -34,18 +34,19 @@
         <version>1.0.6</version>
         <relativePath></relativePath>
     </parent>
-
+    
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
 
     <properties>
-      <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
-      <test.parameters>-TestParameter '@{&quot;SampleName&quot;=&quot;addnode/src/main/scripts&quot;;&quot;RawRepoPath&quot;=&quot;${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/&quot;}'</test.parameters>
-      <template.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/master/src/main/resources/pid.properties</template.pid.properties.url>
-      <template.microsoft.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/master/src/main/resources/microsoft-pid.properties</template.microsoft.pid.properties.url>
+        <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
+        <test.parameters>-TestParameter '@{&quot;SampleName&quot;=&quot;addnode/src/main&quot;;&quot;RawRepoPath&quot;=&quot;${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/&quot;}'</test.parameters>
+        <template.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/master/src/main/resources/pid.properties</template.pid.properties.url>
+        <template.microsoft.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/master/src/main/resources/microsoft-pid.properties</template.microsoft.pid.properties.url>
     </properties>
 
     <description>
         
     </description>
+
 </project>
