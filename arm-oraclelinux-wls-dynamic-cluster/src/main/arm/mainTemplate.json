@@ -526,6 +526,12 @@
                     "location": {
                         "value": "[parameters('location')]"
                     },
+                    "managedServerPrefix": {
+                        "value": "[parameters('managedServerPrefix')]"
+                    },
+                    "dynamicClusterSize": {
+                        "value": "[parameters('dynamicClusterSize')]"
+                    },
                     "wlsDomainName": {
                         "value": "[parameters('wlsDomainName')]"
                     },

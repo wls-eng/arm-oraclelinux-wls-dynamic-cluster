@@ -7,7 +7,7 @@ function echo_stderr()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./aadIntegration.sh <wlsUserName> <wlsPassword> <wlsDomainName> <wlsLDAPProviderName> <addsServerHost> <aadsPortNumber> <wlsLDAPPrincipal> <wlsLDAPPrincipalPassword> <wlsLDAPUserBaseDN> <wlsLDAPGroupBaseDN> <oracleHome> <adminVMName> <wlsAdminPort> <wlsLDAPSSLCertificate> <addsPublicIP> <adminPassword> <wlsAdminServerName>"  
+  echo_stderr "./aadIntegration.sh <wlsUserName> <wlsPassword> <wlsDomainName> <wlsLDAPProviderName> <addsServerHost> <aadsPortNumber> <wlsLDAPPrincipal> <wlsLDAPPrincipalPassword> <wlsLDAPUserBaseDN> <wlsLDAPGroupBaseDN> <oracleHome> <adminVMName> <wlsAdminPort> <wlsLDAPSSLCertificate> <addsPublicIP> <adminPassword> <wlsAdminServerName> <wlsDomainPath> <vmIndex>"  
 }
 
 function validateInput()
@@ -97,6 +97,16 @@ function validateInput()
     then
         echo_stderr "wlsAdminServerName is required. "
     fi
+
+    if [ -z "$wlsDomainPath" ];
+    then
+        echo_stderr "wlsDomainPath is required. "
+    fi
+
+    if [ -z "$vmIndex" ];
+    then
+        echo_stderr "vmIndex is required. "
+    fi
 }
 
 function createAADProvider_model()
@@ -167,23 +177,50 @@ function createSSL_model()
     cat <<EOF >${SCRIPT_PWD}/configure-ssl.py
 # Connect to the AdminServer.
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+shutdown('$WLS_CLUSTER_NAME', 'Cluster')
+print "Ignore host name verification in admin server."
 try:
-   edit("$wlsAdminServerName")
-   startEdit()
-   cd('/')
-   print "set keystore to ${wlsAdminServerName}"
-   cd('/Servers/${wlsAdminServerName}/SSL/${wlsAdminServerName}')
-   cmo.setHostnameVerificationIgnored(true)
-   save()
-   resolve()
-   activate()
-except:
-   stopEdit('y')
-   sys.exit(1)
+    edit('$wlsAdminServerName')
+    startEdit()
+    cd('/Servers/${wlsAdminServerName}/SSL/${wlsAdminServerName}')
+    cmo.setHostnameVerificationIgnored(true)
+    print "Ignore host name verification in cluster."
 
-destroyEditSession("$wlsAdminServerName",force = true)
+    cd('/ServerTemplates/${WLS_DYNAMIC_SERVER_TEMPLATE}/SSL/${WLS_DYNAMIC_SERVER_TEMPLATE}')
+    cmo.setHostnameVerificationIgnored(true)
+EOF
+
+    . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
+    ${JAVA_HOME}/bin/java -version  2>&1  | grep -e "1[.]8[.][0-9]*_"  > /dev/null 
+    javaStatus=$?
+    if [ "${javaStatus}" == "0" ]; then
+        cat <<EOF >>${SCRIPT_PWD}/configure-ssl.py
+    cd('/ServerTemplates/${WLS_DYNAMIC_SERVER_TEMPLATE}//ServerStart/${WLS_DYNAMIC_SERVER_TEMPLATE}')
+    arguments = cmo.getArguments()
+    if(str(arguments) == 'None'):
+        arguments = '${JAVA_OPTIONS_TLS_V12}'
+    else:
+        arguments = str(arguments) + ' ' + '${JAVA_OPTIONS_TLS_V12}'
+    cmo.setArguments(arguments)
+EOF
+    fi
+
+cat <<EOF >>${SCRIPT_PWD}/configure-ssl.py
+    save()
+    resolve()
+    activate()
+except:
+    stopEdit('y')
+    dumpStack()
+    sys.exit(1)
+destroyEditSession("$wlsAdminServerName")
+
+try: 
+    start('$WLS_CLUSTER_NAME', 'Cluster')
+except:
+    dumpStack()
+
 disconnect()
-sys.exit(0)
 EOF
 }
 
@@ -221,7 +258,16 @@ function importAADCertificate()
 {
     # import the key to java security 
     . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
-    java_cacerts_path=${JAVA_HOME}/jre/lib/security/cacerts
+    # For AAD failure: exception happens when importing certificate to JDK 11.0.7
+    # ISSUE: https://github.com/wls-eng/arm-oraclelinux-wls/issues/109
+    # JRE was removed since JDK 11.
+    java_version=$(java -version 2>&1 | sed -n ';s/.* version "\(.*\)\.\(.*\)\..*"/\1\2/p;')
+    if [ ${java_version:0:3} -ge 110 ]; 
+    then 
+        java_cacerts_path=${JAVA_HOME}/lib/security/cacerts
+    else
+        java_cacerts_path=${JAVA_HOME}/jre/lib/security/cacerts
+    fi
 
     # remove existing certificate.
     queryAADTrust=$(${JAVA_HOME}/bin/keytool -list -keystore ${java_cacerts_path} -storepass changeit | grep "aadtrust")
@@ -269,38 +315,6 @@ function restartAdminServerService()
      sudo systemctl start wls_admin
 }
 
-function restartManagedServers()
-{
-    echo "Restart managed servers"
-    cat <<EOF >${SCRIPT_PWD}/restart-managedServer.py
-connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
-servers=cmo.getServers()
-domainRuntime()
-print "Restart the servers which are in RUNNING status"
-for server in servers:
-    bean="/ServerLifeCycleRuntimes/"+server.getName()
-    serverbean=getMBean(bean)
-    if (serverbean.getState() in ("RUNNING")) and (server.getName() != '${wlsAdminServerName}'):
-        try:
-            print "Stop the Server ",server.getName()
-            shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
-            print "Start the Server ",server.getName()
-            start(server.getName(),server.getType())
-        except:
-            print "Failed restarting managed server ", server.getName()
-            dumpStack()
-serverConfig()
-disconnect()
-EOF
-    . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
-    java $WLST_ARGS weblogic.WLST ${SCRIPT_PWD}/restart-managedServer.py 
-
-    if [[ $? != 0 ]]; then
-    echo "Error : Fail to restart managed server to sync up aad configuration."
-    exit 1
-    fi
-}
-
 #This function to check admin server status 
 function wait_for_admin()
 {
@@ -338,11 +352,59 @@ function cleanup()
     echo "Cleanup completed."
 }
 
+function enableTLSv12onJDK8()
+{
+    if ! grep -q "${STRING_ENABLE_TLSV12}" ${wlsDomainPath}/bin/setDomainEnv.sh; then
+        cat <<EOF >>${wlsDomainPath}/bin/setDomainEnv.sh
+# Append -Djdk.tls.client.protocols to JAVA_OPTIONS in jdk8
+# Enable TLSv1.2
+\${JAVA_HOME}/bin/java -version  2>&1  | grep -e "1[.]8[.][0-9]*_"  > /dev/null 
+javaStatus=$?
+
+if [[ "\${javaStatus}" = "0" && "\${JAVA_OPTIONS}"  != *"${JAVA_OPTIONS_TLS_V12}"* ]]; then
+    JAVA_OPTIONS="\${JAVA_OPTIONS} ${JAVA_OPTIONS_TLS_V12}"
+    export JAVA_OPTIONS
+fi
+EOF
+fi
+}
+
+function restartCluster()
+{
+    cat <<EOF >${SCRIPT_PWD}/restart-cluster.py
+# Connect to the AdminServer.
+connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+print "Restart cluster."
+try: 
+    print "Shutdown cluster."
+    shutdown('$WLS_CLUSTER_NAME', 'Cluster')
+    print "Start cluster."
+    start('$WLS_CLUSTER_NAME', 'Cluster')
+except:
+    dumpStack()
+
+disconnect()
+EOF
+
+    . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
+    java $WLST_ARGS weblogic.WLST ${SCRIPT_PWD}/restart-cluster.py
+    errorCode=$?
+    if [ $errorCode -eq 1 ]
+    then 
+        echo "Failed to restart cluster."
+        exit 1
+    fi
+}
+
 export LDAP_USER_NAME='sAMAccountName'
 export LDAP_USER_FROM_NAME_FILTER='(&(sAMAccountName=%u)(objectclass=user))'
+export JAVA_OPTIONS_TLS_V12="-Djdk.tls.client.protocols=TLSv1.2"
+export STRING_ENABLE_TLSV12="Append -Djdk.tls.client.protocols to JAVA_OPTIONS in jdk8"
+export WLS_CLUSTER_NAME="cluster1"
+export WLS_DYNAMIC_SERVER_TEMPLATE="myServerTemplate"
 export SCRIPT_PWD=`pwd`
 
-if [ $# -ne 17 ]
+if [ $# -ne 19 ]
 then
     usage
 	exit 1
@@ -365,25 +427,37 @@ export wlsADSSLCer="${14}"
 export wlsLDAPPublicIP="${15}"
 export vituralMachinePassword="${16}"
 export wlsAdminServerName=${17}
+export wlsDomainPath=${18}
+export vmIndex=${19}
 export wlsAdminURL=$wlsAdminHost:$wlsAdminPort
 
+if [ $vmIndex -eq 0 ];
+then
+    cleanup
+    echo "check status of admin server"
+    wait_for_admin
 
-echo "check status of admin server"
-wait_for_admin
+    echo "start to configure Azure Active Directory"
+    enableTLSv12onJDK8
+    createAADProvider_model
+    createSSL_model
+    mapLDAPHostWithPublicIP
+    parseLDAPCertificate
+    importAADCertificate
+    configureSSL
+    configureAzureActiveDirectory
+    restartAdminServerService
 
-echo "start to configure Azure Active Directory"
-createAADProvider_model
-createSSL_model
-mapLDAPHostWithPublicIP
-parseLDAPCertificate
-importAADCertificate
-configureSSL
-configureAzureActiveDirectory
-restartAdminServerService
-
-echo "Waiting for admin server to be available"
-wait_for_admin
-echo "Weblogic admin server is up and running"
-
-restartManagedServers
+    echo "Waiting for admin server to be available"
+    wait_for_admin
+    echo "Weblogic admin server is up and running"
+    restartCluster
+    cleanup
+else
+    cleanup
+    mapLDAPHostWithPublicIP
+    parseLDAPCertificate
+    importAADCertificate
+    cleanup
+fi
 
