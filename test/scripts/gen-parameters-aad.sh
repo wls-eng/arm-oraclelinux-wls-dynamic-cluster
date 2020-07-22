@@ -33,9 +33,6 @@ cat <<EOF > ${parametersPath}
         "enableAAD": {
             "value": true
         },
-        "enableAppGateway": {
-            "value": false
-        },
         "enableDB": {
             "value": false
         },
