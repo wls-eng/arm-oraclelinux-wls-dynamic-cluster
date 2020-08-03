@@ -53,6 +53,15 @@
                 "description": "Admin Server hosting VM name."
             }
         },
+        "dynamicClusterSize": {
+            "type": "int",
+            "defaultValue": 1,
+            "minValue": 1,
+            "maxValue": 100,
+            "metadata": {
+                "description": "Number of VMs hosting managed servers that have been deployed."
+            }
+        },
         "location": {
             "type": "string",
             "metadata": {
@@ -64,15 +73,6 @@
             "defaultValue": "msp",
             "metadata": {
                 "description": "Provide managed server prefix name"
-            }
-        },
-        "dynamicClusterSize": {
-            "type": "int",
-            "defaultValue": 1,
-            "minValue": 1,
-            "maxValue": 100,
-            "metadata": {
-                "description": "Number of VMs hosting managed servers that have been deployed."
             }
         },
         "wlsDomainName": {

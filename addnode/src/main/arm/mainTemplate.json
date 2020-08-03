@@ -42,6 +42,7 @@
       },
       "adminUsername": {
          "type": "string",
+         "defaultValue": "weblogic",
          "metadata": {
             "description": "User name for the Virtual Machine."
          }
