@@ -135,6 +135,16 @@ topology:
                 CalculatedMachineNames: true
                 ServerNamePrefix: "${managedServerPrefix}"
                 MachineNameMatchExpression: "$machineNamePrefix-${vmNamePrefix}*"
+   Server:
+        '$wlsServerName':
+            ListenPort: $wlsAdminPort
+            RestartDelaySeconds: 10
+            SSL:
+                ListenPort: $wlsSSLAdminPort
+                Enabled: true	      
+   SecurityConfiguration:
+        NodeManagerUsername: "$wlsUserName"
+        NodeManagerPasswordEncrypted: "$wlsPassword"                
    ServerTemplate:
         '${dynamicServerTemplate}' :
             ListenPort: ${wlsManagedPort}
