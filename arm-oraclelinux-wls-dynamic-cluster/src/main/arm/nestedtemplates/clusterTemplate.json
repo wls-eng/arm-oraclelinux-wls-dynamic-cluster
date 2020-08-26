@@ -423,7 +423,9 @@
                 "settings": {
                     "fileUris": [
                         "[uri(parameters('_artifactsLocationClusterTemplate'), concat('../scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]"
-                    ],
+                    ]
+                },
+                "protectedSettings": {
                     "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyindex(),' ',variables('const_managedVMPrefix'),' ',parameters('maxDynamicClusterSize'),' ',parameters('dynamicClusterSize'),' ',parameters('adminVMName'),' ', variables('const_wlsHome'),' ',variables('name_storageAccount'),' ',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('name_storageAccount')), '2019-04-01').keys[0].value,' ',variables('const_mountPointPath'),' ')]"
                 }
             }

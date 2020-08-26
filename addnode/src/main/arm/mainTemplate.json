@@ -342,7 +342,9 @@
             "settings": {
                "fileUris": [
                   "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]"
-               ],
+               ]
+            },
+            "protectedSettings": {
                "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',concat(parameters('managedServerPrefix'), copyIndex(parameters('numberOfExistingNodes'))),' ', parameters('adminURL'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').publicIP, 'null'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').serverHost, 'null'),' ', parameters('adminPasswordOrKey'))]"
             }
          }
