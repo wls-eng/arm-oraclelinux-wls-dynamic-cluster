@@ -418,7 +418,9 @@ function create_nodemanager_service()
  cat <<EOF >/etc/systemd/system/wls_nodemanager.service
  [Unit]
 Description=WebLogic nodemanager service
- 
+After=network-online.target
+Wants=network-online.target
+
 [Service]
 Type=simple
 # Note that the following three parameters should be changed to the correct paths
@@ -430,7 +432,9 @@ User=oracle
 Group=oracle
 KillMode=process
 LimitNOFILE=65535
- 
+Restart=always
+RestartSec=3
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -444,7 +448,9 @@ function create_adminserver_service()
  cat <<EOF >/etc/systemd/system/wls_admin.service
 [Unit]
 Description=WebLogic Adminserver service
- 
+After=network-online.target
+Wants=network-online.target
+
 [Service]
 Type=simple
 WorkingDirectory="$DOMAIN_PATH/$wlsDomainName"
@@ -454,7 +460,9 @@ User=oracle
 Group=oracle
 KillMode=process
 LimitNOFILE=65535
- 
+Restart=always
+RestartSec=3
+
 [Install]
 WantedBy=multi-user.target
 EOF
