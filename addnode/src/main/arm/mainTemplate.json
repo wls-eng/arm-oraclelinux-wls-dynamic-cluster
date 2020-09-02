@@ -65,6 +65,21 @@
             "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
          }
       },
+      "elkSettings": {
+         "type": "object",
+         "defaultValue": {
+            "enable": false,
+            "elasticsearchPassword": "null",
+            "elasticsearchPort": "null",
+            "elasticsearchURI": "null",
+            "elasticsearchUserName": "null",
+            "logIndex": "null",
+            "logsToIntegrate": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput", "NodeManagerLog" ]
+         },
+         "metadata": {
+            "description": "If enable is true, must specify all the properties of elkSettings. logsToIntegrate must be value of an array."
+         }
+      },
       "guidValue": {
          "type": "string",
          "defaultValue": "[newGuid()]"
@@ -81,6 +96,13 @@
          "defaultValue": "msp",
          "metadata": {
             "description": "Provide managed server prefix"
+         }
+      },
+      "maxDynamicClusterSize": {
+         "defaultValue": 10,
+         "type": "int",
+         "metadata": {
+            "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster. Used in exporting logs to Elasticsearch."
          }
       },
       "numberOfExistingNodes": {
@@ -178,6 +200,7 @@
       "name_linuxImageVersion": "[last(split(parameters('skuUrnVersion'),';'))]",
       "name_nic": "_NIC",
       "name_publicIPAddress": "_PublicIP",
+      "name_scriptELKConfiguration": "elkIntegration.sh",
       "name_scriptFile": "addNodeToDynamicCluster.sh",
       "name_share": "wlsshare",
       "name_subnet": "Subnet",
@@ -185,6 +208,25 @@
       "name_vmMachine": "[concat(parameters('managedServerPrefix'),'VM')]",
       "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]"
    },
+   "functions": [
+      {
+         "namespace": "array",
+         "members": {
+            "join": {
+               "parameters": [
+                  {
+                     "name": "items",
+                     "type": "array"
+                  }
+               ],
+               "output": {
+                  "type": "string",
+                  "value": "[replace(replace(replace(string(parameters('items')), '[\"', ''), '\"]', ''), '\",\"', ',')]"
+               }
+            }
+         }
+      }
+   ],
    "resources": [
       {
          "apiVersion": "2019-10-01",
@@ -335,11 +377,12 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
                "fileUris": [
-                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]"
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
+                  "[uri(parameters('_artifactsLocation'), concat('../../../arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/', variables('name_scriptELKConfiguration'), parameters('_artifactsLocationSasToken')))]"
                ]
             },
             "protectedSettings": {
-               "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',concat(parameters('managedServerPrefix'), copyIndex(parameters('numberOfExistingNodes'))),' ', parameters('adminURL'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').publicIP, 'null'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').serverHost, 'null'),' ', parameters('adminPasswordOrKey'))]"
+               "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyIndex(parameters('numberOfExistingNodes')),' ', parameters('adminURL'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').publicIP, 'null'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').serverHost, 'null'),' ', parameters('adminPasswordOrKey'), ' ',parameters('elkSettings').enable,' ', concat(parameters('elkSettings').elasticsearchURI,':',parameters('elkSettings').elasticsearchPort),' ', parameters('elkSettings').elasticsearchUserName,' ', parameters('elkSettings').elasticsearchPassword,' ', array.join(parameters('elkSettings').logsToIntegrate), ' ', parameters('elkSettings').logIndex, ' ', parameters('maxDynamicClusterSize'))]"
             }
          }
       },
