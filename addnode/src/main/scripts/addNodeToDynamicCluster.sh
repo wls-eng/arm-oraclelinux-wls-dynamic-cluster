@@ -9,7 +9,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./addnode.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <serverIndex> <wlsAdminURL> <oracleHome> <wlsDomainPath> <storageAccountName> <storageAccountKey> <mountpointPath> <wlsADSSLCer> <wlsLDAPPublicIP> <adServerHost> <vituralMachinePassword> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <maxDynamicClusterSize>"
+  echo_stderr "./addnode.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <serverIndex> <wlsAdminURL> <oracleHome> <wlsDomainPath> <dynamicClusterSize> <vmNamePrefix> <storageAccountName> <storageAccountKey> <mountpointPath> <wlsADSSLCer> <wlsLDAPPublicIP> <adServerHost> <vituralMachinePassword> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <maxDynamicClusterSize>"
 }
 
 function installUtilities()
@@ -75,6 +75,16 @@ function validateInput()
 
     if [ -z "$wlsDomainPath" ]; then
         echo_stderr "wlsDomainPath is required. "
+    fi
+
+    if [ -z "$dynamicClusterSize" ];
+    then
+        echo_stderr "dynamicClusterSize is required. "
+    fi
+
+    if [ -z "$vmNamePrefix" ];
+    then
+        echo_stderr "vmNamePrefix is required. "
     fi
 
     if [ -z "$storageAccountName" ]; then
@@ -167,7 +177,12 @@ topology:
             MigrationBasis: 'consensus'
             DynamicServers:
                 ServerTemplate: '${dynamicServerTemplate}'
-                MachineNameMatchExpression: "$MATCH_EXPRESSION"
+                DynamicClusterSize: ${dynamicClusterSize}
+                MaxDynamicClusterSize: ${maxDynamicClusterSize}
+                CalculatedListenPorts: true
+                CalculatedMachineNames: true
+                ServerNamePrefix: "${managedServerPrefix}"
+                MachineNameMatchExpression: "machine-${vmNamePrefix}*"
    ServerTemplate:
         '${dynamicServerTemplate}' :
             ListenPort: ${wlsManagedPort}
@@ -212,25 +227,6 @@ nmEnroll('$wlsDomainPath/$wlsDomainName','$wlsDomainPath/$wlsDomainName/nodemana
 disconnect()
 EOF
 }
-
-function getMachineMatchExpression()
-{
-
-    cat <<EOF >$wlsDomainPath/getMachineMatchExpression.py
-connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
-cd('Clusters/$wlsClusterName/DynamicServers/NO_NAME_0')
-matchExpression=cmo.getMachineNameMatchExpression()
-print('MatchExpression='+matchExpression)
-disconnect()
-EOF
-
-. $oracleHome/oracle_common/common/bin/setWlstEnv.sh; 
-RESULT=$(java $WLST_ARGS weblogic.WLST $wlsDomainPath/getMachineMatchExpression.py)
-MATCH_EXPRESSION=$(echo $RESULT|grep MatchExpression=|cut -d'=' -f 2)
-echo $MATCH_EXPRESSION
-
-}
-
 
 #This function to wait for admin server 
 function wait_for_admin()
@@ -318,6 +314,9 @@ function create_managedSetup(){
     fi
     
     wait_for_admin
+
+    # For issue https://github.com/wls-eng/arm-oraclelinux-wls/issues/89
+    getSerializedSystemIniFileFromShare
     
     echo "Adding Machine $machineName"
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST $wlsDomainPath/add-machine.py"
@@ -515,7 +514,7 @@ for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 22 ]
+if [ $# -ne 24 ]
 then
     usage
     exit 1
@@ -529,20 +528,22 @@ export serverIndex=$5
 export wlsAdminURL=$6
 export oracleHome=${7}
 export wlsDomainPath=${8}
-export storageAccountName=${9}
-export storageAccountKey=${10}
-export mountpointPath=${11}
-export wlsADSSLCer="${12}"
-export wlsLDAPPublicIP="${13}"
-export adServerHost="${14}"
-export vituralMachinePassword="${15}"
-export enableELK=${16}
-export elasticURI=${17}
-export elasticUserName=${18}
-export elasticPassword=${19}
-export logsToIntegrate=${20}
-export logIndex=${21}
-export maxDynamicClusterSize=${22}
+export dynamicClusterSize=${9}
+export vmNamePrefix=${10}
+export storageAccountName=${11}
+export storageAccountKey=${12}
+export mountpointPath=${13}
+export wlsADSSLCer="${14}"
+export wlsLDAPPublicIP="${15}"
+export adServerHost="${16}"
+export vituralMachinePassword="${17}"
+export enableELK=${18}
+export elasticURI=${19}
+export elasticUserName=${20}
+export elasticPassword=${21}
+export logsToIntegrate=${22}
+export logIndex=${23}
+export maxDynamicClusterSize=${24}
 
 export enableAAD="false"
 
@@ -572,7 +573,6 @@ if [ "$enableAAD" == "true" ];then
     importAADCertificate
 fi
 
-getMachineMatchExpression
 create_managedSetup
 create_nodemanager_service
 enabledAndStartNodeManagerService

@@ -65,6 +65,13 @@
             "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
          }
       },
+      "dynamicClusterSize": {
+            "defaultValue": 2,
+            "type": "int",
+            "metadata": {
+                "description": "Initial Number of Managed Servers that will be configured in the Dynamic Cluster"
+            }
+        },
       "elkSettings": {
          "type": "object",
          "defaultValue": {
@@ -102,7 +109,7 @@
          "defaultValue": 10,
          "type": "int",
          "metadata": {
-            "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster. Used in exporting logs to Elasticsearch."
+            "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster."
          }
       },
       "numberOfExistingNodes": {
@@ -191,6 +198,7 @@
             ]
          }
       },
+      "const_managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
       "const_mountPointPath": "[concat('/mnt/', variables('name_share'))]",
       "const_publicIPAddressType": "Dynamic",
       "const_vmSize": "[parameters('vmSizeSelect')]",
@@ -382,7 +390,7 @@
                ]
             },
             "protectedSettings": {
-               "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyIndex(parameters('numberOfExistingNodes')),' ', parameters('adminURL'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').publicIP, 'null'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').serverHost, 'null'),' ', parameters('adminPasswordOrKey'), ' ',parameters('elkSettings').enable,' ', concat(parameters('elkSettings').elasticsearchURI,':',parameters('elkSettings').elasticsearchPort),' ', parameters('elkSettings').elasticsearchUserName,' ', parameters('elkSettings').elasticsearchPassword,' ', array.join(parameters('elkSettings').logsToIntegrate), ' ', parameters('elkSettings').logIndex, ' ', parameters('maxDynamicClusterSize'))]"
+               "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('managedServerPrefix'),' ',copyIndex(parameters('numberOfExistingNodes')),' ', parameters('adminURL'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ', parameters('dynamicClusterSize'),' ', variables('const_managedVMPrefix'),' ',parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').publicIP, 'null'),' ', if(parameters('aadsSettings').enable, parameters('aadsSettings').serverHost, 'null'),' ', parameters('adminPasswordOrKey'), ' ',parameters('elkSettings').enable,' ', concat(parameters('elkSettings').elasticsearchURI,':',parameters('elkSettings').elasticsearchPort),' ', parameters('elkSettings').elasticsearchUserName,' ', parameters('elkSettings').elasticsearchPassword,' ', array.join(parameters('elkSettings').logsToIntegrate), ' ', parameters('elkSettings').logIndex, ' ', parameters('maxDynamicClusterSize'))]"
             }
          }
       },
