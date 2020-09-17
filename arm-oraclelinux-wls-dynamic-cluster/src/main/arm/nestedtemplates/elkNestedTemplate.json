@@ -32,8 +32,6 @@
         "dynamicClusterSize": {
             "type": "int",
             "defaultValue": 2,
-            "minValue": 2,
-            "maxValue": 20,
             "metadata": {
                 "description": "Number of Managed Servers that have been configured in the Dynamic Cluster."
             }
