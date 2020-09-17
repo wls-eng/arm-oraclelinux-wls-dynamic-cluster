@@ -60,13 +60,6 @@ function validateInput()
     if [ -z "$wlsAdminURL" ];
     then
         echo_stderr "wlsAdminURL is required. "
-    else
-        status=`curl --insecure -ILs http://${wlsAdminURL}/weblogic/ready | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-        if [[ "$status" != "200" ]];
-        then
-          echo_stderr "Admin Server not accessible on URL: $wlsAdminURL. Please check and retry again."
-          exit 1
-        fi
     fi
 
     if [ -z "$oracleHome" ]; then
