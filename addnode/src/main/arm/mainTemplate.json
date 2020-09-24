@@ -297,7 +297,10 @@
                      }
                   }
                }
-            ]
+            ],
+            "dnsSettings": {
+               "internalDnsNameLabel": "[concat(variables('name_vmMachine'), copyIndex(parameters('numberOfExistingNodes')))]"
+            }
          }
       },
       {

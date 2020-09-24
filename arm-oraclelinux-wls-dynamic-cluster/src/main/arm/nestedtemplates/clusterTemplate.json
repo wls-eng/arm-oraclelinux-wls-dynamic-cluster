@@ -328,7 +328,10 @@
                             }
                         }
                     }
-                ]
+                ],
+                "dnsSettings": {
+                    "internalDnsNameLabel": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('const_managedVMPrefix'), copyIndex()))]"
+                }
             }
         },
         {
