@@ -287,9 +287,9 @@
     },
     "resources": [
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.start}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.start}",
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -302,7 +302,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "clusterLinkedTemplate",
             "properties": {
                 "mode": "Incremental",
@@ -367,7 +367,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "dbLinkedTemplate",
             "condition": "[parameters('enableDB')]",
             "dependsOn": [
@@ -419,10 +419,10 @@
         {
             "name": "aadLinkedTemplate",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'dbLinkedTemplate')]"
             ],
-            "apiVersion": "2019-10-01",
             "condition": "[parameters('enableAAD')]",
             "properties": {
                 "mode": "Incremental",
@@ -494,10 +494,10 @@
         {
             "name": "elkLinkedTemplate",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'aadLinkedTemplate')]"
             ],
-            "apiVersion": "2019-10-01",
             "condition": "[parameters('enableELK')]",
             "properties": {
                 "mode": "Incremental",
@@ -555,9 +555,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.end}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.end}",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'clusterLinkedTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'aadLinkedTemplate')]",

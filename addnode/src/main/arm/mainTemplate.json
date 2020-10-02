@@ -237,9 +237,9 @@
    ],
    "resources": [
       {
-         "apiVersion": "2019-10-01",
-         "name": "${dynamic.addnode.start}",
          "type": "Microsoft.Resources/deployments",
+         "apiVersion": "${azure.apiVersion}",
+         "name": "${dynamic.addnode.start}",
          "properties": {
             "mode": "Incremental",
             "template": {
@@ -251,7 +251,7 @@
       },
       {
          "type": "Microsoft.Network/publicIPAddresses",
-         "apiVersion": "2020-03-01",
+         "apiVersion": "${azure.apiVersion}",
          "name": "[concat(variables('name_vmMachine'),copyIndex(parameters('numberOfExistingNodes')),variables('name_publicIPAddress'))]",
          "location": "[parameters('location')]",
          "copy": {
@@ -267,13 +267,13 @@
       },
       {
          "type": "Microsoft.Network/virtualNetworks/subnets",
-         "apiVersion": "2020-03-01",
+         "apiVersion": "${azure.apiVersion}",
          "name": "[concat(variables('name_virtualNetwork'), '/', variables('name_subnet'))]",
          "condition": "[and(empty(variables('name_virtualNetwork')), empty(variables('name_subnet')))]"
       },
       {
          "type": "Microsoft.Network/networkInterfaces",
-         "apiVersion": "2020-03-01",
+         "apiVersion": "${azure.apiVersion}",
          "name": "[concat(variables('name_vmMachine'),copyIndex(parameters('numberOfExistingNodes')), variables('name_nic'))]",
          "location": "[parameters('location')]",
          "copy": {
@@ -302,7 +302,7 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines",
-         "apiVersion": "2018-10-01",
+         "apiVersion": "${azure.apiVersion}",
          "name": "[concat(variables('name_vmMachine'), copyIndex(parameters('numberOfExistingNodes')))]",
          "location": "[parameters('location')]",
          "copy": {
@@ -368,8 +368,8 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
+         "apiVersion": "${azure.apiVersion}",
          "name": "[concat(variables('name_vmMachine'), copyIndex(parameters('numberOfExistingNodes')), '/newuserscript')]",
-         "apiVersion": "2019-12-01",
          "location": "[parameters('location')]",
          "copy": {
             "name": "virtualMachineExtensionLoop",
@@ -395,9 +395,9 @@
          }
       },
       {
-         "apiVersion": "2019-10-01",
-         "name": "${dynamic.addnode.end}",
          "type": "Microsoft.Resources/deployments",
+         "apiVersion": "${azure.apiVersion}",
+         "name": "${dynamic.addnode.end}",
          "dependsOn": [
             "virtualMachineExtensionLoop"
          ],

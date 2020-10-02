@@ -146,9 +146,9 @@
     ],
     "resources": [
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.elk.start}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.elk.start}",
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -161,8 +161,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'), copyIndex(),'/newuserscript'))]",
-            "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "virtualMachineExtensionLoop",
@@ -184,9 +184,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.elk.end}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.elk.end}",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
             ],

@@ -149,9 +149,9 @@
     },
     "resources": [
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.aad.start}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.aad.start}",
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -164,8 +164,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[concat(variables('const_managedVMPrefix'), add(copyIndex(), 1),'/newuserscript')]",
-            "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "managedVirtualMachineExtensionLoop",
@@ -188,8 +188,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[concat(parameters('adminVMName'),'/newuserscript')]",
-            "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "managedVirtualMachineExtensionLoop"
@@ -210,9 +210,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.aad.end}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.aad.end}",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), 'newuserscript')]"
             ],

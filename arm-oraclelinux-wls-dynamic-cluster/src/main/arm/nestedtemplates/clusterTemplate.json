@@ -185,9 +185,9 @@
     },
     "resources": [
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.cluster.start}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.cluster.start}",
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -200,7 +200,7 @@
         },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[variables('name_networkSecurityGroup')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -260,7 +260,7 @@
 		},
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_publicIPAddress')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_publicIPAddress')))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -276,7 +276,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[variables('name_virtualNetwork')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -303,7 +303,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_nic')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_nic')))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -333,7 +333,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('const_managedVMPrefix'), copyIndex()))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -399,8 +399,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'),copyIndex(),'/newuserscript'))]",
-            "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "virtualMachineExtensionLoop",
@@ -425,9 +425,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${dynamic.cluster.end}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${dynamic.cluster.end}",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
             ],
@@ -442,9 +442,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${from.owls-122130-8u131-ol74}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${from.owls-122130-8u131-ol74}",
             "condition": "[if(contains(variables('name_linuxImageOfferSKU'), 'owls-122130-8u131-ol74'), bool('true'), bool('false'))]",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
@@ -460,9 +460,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${from.owls-122130-8u131-ol73}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${from.owls-122130-8u131-ol73}",
             "condition": "[if(contains(variables('name_linuxImageOfferSKU'), 'from.owls-122130-8u131-ol73'), bool('true'), bool('false'))]",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
@@ -478,9 +478,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${from.owls-122140-8u251-ol76}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${from.owls-122140-8u251-ol76}",
             "condition": "[if(contains(variables('name_linuxImageOfferSKU'), 'from.owls-122140-8u251-ol76'), bool('true'), bool('false'))]",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
@@ -496,9 +496,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${from.owls-141100-8u251-ol76}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${from.owls-141100-8u251-ol76}",
             "condition": "[if(contains(variables('name_linuxImageOfferSKU'), 'owls-141100-8u251-ol76'), bool('true'), bool('false'))]",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
@@ -514,9 +514,9 @@
             }
         },
         {
-            "apiVersion": "2019-10-01",
-            "name": "${from.owls-141100-11_07-ol76}",
             "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "${from.owls-141100-11_07-ol76}",
             "condition": "[if(contains(variables('name_linuxImageOfferSKU'), 'owls-141100-11_07-ol76'), bool('true'), bool('false'))]",
             "dependsOn": [
                 "virtualMachineExtensionLoop"
