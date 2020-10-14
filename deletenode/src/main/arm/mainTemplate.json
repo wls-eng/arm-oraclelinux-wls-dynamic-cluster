@@ -23,10 +23,24 @@
                 "description": "Admin Server hosting VM name."
             }
         },
+        "deletingCacheServerNames": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Names of cache servers to be deleted, comma delimited. Please ignore this parameter if you are not deleting cache servers."
+            }
+        },
         "deletingManagedServerMachineNames": {
             "type": "array",
             "metadata": {
                 "description": "Vitual Machine names of managed servers to be deleted, comma delimited."
+            }
+        },
+        "managedServerPrefix": {
+            "type": "string",
+            "defaultValue": "msp",
+            "metadata": {
+                "description": "Provide managed server prefix name"
             }
         },
         "wlsUserName": {
@@ -116,7 +130,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh',' ', variables('name_scriptDeleteNode'), ' ', parameters('wlsUserName'),' ',parameters('wlsPassword'),' ', array.join(parameters('deletingManagedServerMachineNames')),' ', parameters('wlsForceShutDown'), ' ', parameters('adminVMName'), ' ',variables('const_wlsAdminPort'),' ',variables('const_wlsHome'))]"
+                    "commandToExecute": "[concat('sh',' ', variables('name_scriptDeleteNode'), ' ', parameters('wlsUserName'),' ',parameters('wlsPassword'),' ', array.join(parameters('deletingManagedServerMachineNames')),' ', parameters('wlsForceShutDown'), ' ', parameters('adminVMName'), ' ',variables('const_wlsAdminPort'),' ',variables('const_wlsHome'), ' ', parameters('managedServerPrefix'), ' ', array.join(parameters('deletingCacheServerNames')))]"
                 }
             }
         },

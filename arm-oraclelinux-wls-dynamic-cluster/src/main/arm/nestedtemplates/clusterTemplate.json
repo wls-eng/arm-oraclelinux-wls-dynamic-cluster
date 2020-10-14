@@ -555,6 +555,10 @@
         "adminSecuredConsole": {
             "type": "string",
             "value": "[concat('https://',reference(variables('name_outputAdminHost'), '2019-11-01').dnsSettings.fqdn,':7002/console')]"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "value": "[variables('name_storageAccount')]"
         }
     }
 }
