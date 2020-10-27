@@ -254,8 +254,8 @@ EOF
 function create_adminSetup()
 {
     echo "Creating Admin Setup"
-    echo "Creating domain path /u01/domains"
-    DOMAIN_PATH="/u01/domains" 
+    echo "Creating domain path $DOMAIN_PATH"
+ 
     sudo mkdir -p $DOMAIN_PATH 
     sudo rm -rf $DOMAIN_PATH/*
 
@@ -454,8 +454,8 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory="$DOMAIN_PATH/$wlsDomainName"
-ExecStart="$DOMAIN_PATH/$wlsDomainName/startWebLogic.sh"
-ExecStop="$DOMAIN_PATH/$wlsDomainName/bin/stopWebLogic.sh"
+ExecStart="${startWebLogicScript}"
+ExecStop="${stopWebLogicScript}"
 User=oracle
 Group=oracle
 KillMode=process
@@ -587,6 +587,24 @@ function getSerializedSystemIniFileFromShare()
   runuser -l oracle -c "chmod 640 ${DOMAIN_PATH}/${wlsDomainName}/security/SerializedSystemIni.dat"
 }
 
+# Create custom stopWebLogic script and add it to wls_admin service
+# This script is created as stopWebLogic.sh will not work if non ssl admin listening port 7001 is disabled
+# Refer https://github.com/wls-eng/arm-oraclelinux-wls/issues/164 
+function createStopWebLogicScript()
+{
+
+cat <<EOF >${stopWebLogicScript}
+#!/bin/sh
+# This is custom script for stopping weblogic server using ADMIN_URL supplied
+export ADMIN_URL="t3://${wlsAdminURL}"
+${DOMAIN_PATH}/${wlsDomainName}/bin/stopWebLogic.sh
+EOF
+
+sudo chown -R $username:$groupname ${stopWebLogicScript}
+sudo chmod -R 750 ${stopWebLogicScript}
+
+}
+
 #main script starts here
 
 CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -622,6 +640,9 @@ export oracleHome=${10}
 export storageAccountName=${11}
 export storageAccountKey=${12}
 export mountpointPath=${13}
+export DOMAIN_PATH="/u01/domains"
+export startWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/startWebLogic.sh"
+export stopWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/bin/customStopWebLogic.sh"
 
 # Always index 0 is set as admin server
 export wlsAdminPort=7001
@@ -658,6 +679,7 @@ if [ $wlsServerName == "admin" ];
 then
   updateNetworkRules "admin"
   create_adminSetup
+  createStopWebLogicScript
   admin_boot_setup
   create_adminserver_service
   create_nodemanager_service
