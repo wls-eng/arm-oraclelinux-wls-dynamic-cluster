@@ -161,7 +161,7 @@ jobs:
           name: ${{steps.addnode_artifact_file.outputs.addnode_artifactName}}
           path: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
 
-      - name: Archive arm-oraclelinux-wls-cluster addnode template
+      - name: Archive arm-oraclelinux-wls-dynamic-cluster addnode template
         uses: actions/upload-artifact@v1
         if: success()
         with:
@@ -183,6 +183,22 @@ jobs:
         with:
           name: ${{steps.deletenode_artifact_file.outputs.deletenode_artifactName}}
           path: ${{steps.deletenode_artifact_file.outputs.deletenode_artifactPath}}
+
+      - name: Generate addnode-coherence artifact file name and path
+        id: addnode_coherence_artifact_file
+        run: |
+          addnode_coherence_version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode-coherence/pom.xml)
+          addnode_coherence_artifactName=arm-oraclelinux-wls-dynamic-cluster-addnode-coherence-$addnode_coherence_version-arm-assembly
+          unzip arm-oraclelinux-wls-dynamic-cluster/addnode-coherence/target/$addnode_coherence_artifactName.zip -d arm-oraclelinux-wls-dynamic-cluster/addnode-coherence/target/$addnode_coherence_artifactName
+          echo "##[set-output name=addnode_coherence_artifactName;]${addnode_coherence_artifactName}"
+          echo "##[set-output name=addnode_coherence_artifactPath;]arm-oraclelinux-wls-dynamic-cluster/addnode-coherence/target/$addnode_coherence_artifactName"
+
+      - name: Archive arm-oraclelinux-wls-dynamic-cluster addnode-coherence template
+        uses: actions/upload-artifact@v1
+        if: success()
+        with:
+          name: ${{steps.addnode_coherence_artifact_file.outputs.addnode_coherence_artifactName}}
+          path: ${{steps.addnode_coherence_artifact_file.outputs.addnode_coherence_artifactPath}}
 
   deploy-dependencies:
     needs: preflight
@@ -508,6 +524,43 @@ jobs:
             --parameters @arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-elk.json \
             --template-file ${artifactName}/nestedtemplates/elkNestedTemplate.json
 
+      - name: Get storage account name
+        id: query-storage-account-name
+        run: |
+          echo "query storage account name"
+          storageAccount=$(az resource list -g $resourceGroup --resource-type Microsoft.Storage/storageAccounts --query [0].name -o tsv)
+          echo "Storage account name: ${storageAccount}"
+          echo "##[set-env name=storageAccount;]${storageAccount}"
+
+      - name: Set up Coherence by deploying sub template
+        id: enable-coherence
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.azCliVersion }}
+          inlineScript: |
+            # Generate parameters for Coherence template deployment
+            bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy-coherence.sh \
+            arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-coherence.json \
+            ${{ env.adminVMName }} \
+            ${{ env.wlsPassword }} \
+            "${{ matrix.images }}" \
+            ${{ env.location }} \
+            ${storageAccount} \
+            ${{ env.wlsDomainName }} \
+            ${{ env.wlsUserName }} \
+            ${{ env.wlsPassword }} \
+            ${{ env.userName }} \
+            ${{ env.testbranchName }} \
+            ${{ env.managedServerPrefix }}
+
+            echo "Deploy Coherence Template..."
+            az group deployment create \
+            --debug \
+            --resource-group ${resourceGroup} \
+            --name coherence \
+            --parameters @arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-coherence.json \
+            --template-file ${artifactName}/nestedtemplates/coherenceTemplate.json
+
       - name: Output addnode artifact name
         id: artifact_file_addnode
         run: |
@@ -526,17 +579,14 @@ jobs:
         with:
           azcliversion: ${{ env.azCliVersion }}
           inlineScript: |
-            echo "add two new nodes and enable app gateway"
-            echo "query storage account name"
-            storageAccount=$(az resource list -g $resourceGroup --resource-type Microsoft.Storage/storageAccounts --query [0].name -o tsv)
-            echo "Storage account name: ${storageAccount}"
+            echo "add two new nodes"
             echo "generate add-node parameters"
             bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy-addnode.sh \
             arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-addnode.json \
               ${{ env.wlsPassword }} \
               ${{ env.adminVMName }}:7001 \
               weblogic \
-              2 \
+              1 \
               "${{ matrix.images }}" \
               ${storageAccount} \
               ${{ env.wlsDomainName }} \
@@ -567,6 +617,62 @@ jobs:
           mspVM2=$(az resource list -g ${resourceGroup} --resource-type Microsoft.Compute/virtualMachines --name ${{ env.managedServerPrefix }}VM2 --query [0].name -o tsv)
           if [ -z "$mspVM2" ]; then
             echo "Add-node failure: new machine ${{ env.managedServerPrefix }}VM2 does not exist."
+            exit 1
+          fi
+
+      - name: Output addnode-coherence artifact name
+        id: artifact_file_addnode_coherence
+        run: |
+          addnodeCoherenceVersion=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode-coherence/pom.xml)
+          artifactNameOfAddnodeCo=arm-oraclelinux-wls-dynamic-cluster-addnode-coherence-$addnodeCoherenceVersion-arm-assembly
+          echo "##[set-env name=artifactNameOfAddnodeCo;]${artifactNameOfAddnodeCo}"
+          echo "##[set-output name=artifactNameOfAddnodeCo;]${artifactNameOfAddnodeCo}"
+      - name: Download artifact for deployment
+        uses: actions/download-artifact@v1
+        with:
+          name: ${{steps.artifact_file_addnode_coherence.outputs.artifactNameOfAddnodeCo}}
+
+      - name: Add new cache node to coherence cluster
+        id: add-node-coherence
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.azCliVersion }}
+          inlineScript: |
+            echo "add new cache server"
+            echo "generate parameters"
+            bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy-addnode-coherence.sh \
+            arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-addnode-coherence.json \
+              ${{ env.wlsPassword }} \
+              ${{ env.adminVMName }} \
+              weblogic \
+              1 \
+              "${{ matrix.images }}" \
+              ${storageAccount} \
+              ${{ env.wlsDomainName }} \
+              ${{ env.location }} \
+              ${{ env.wlsUserName }} \
+              ${{ env.wlsPassword }} \
+              ${{ env.userName }} \
+              ${{ env.testbranchName }} \
+              ${{ env.managedServerPrefix }}
+            echo "deploy add-node template to create new nodes"
+            az group deployment validate \
+              -g ${resourceGroup} \
+              -f ${artifactNameOfAddnodeCo}/mainTemplate.json \
+              -p @arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-addnode-coherence.json \
+              --no-prompt
+            az group deployment create \
+              --debug \
+              --resource-group ${resourceGroup} \
+              --name addnode \
+              --parameters @arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-addnode-coherence.json \
+              --template-file ${artifactNameOfAddnodeCo}/mainTemplate.json
+      - name: Verify new nodes
+        id: verify-new-nodes-coherence
+        run: |
+          mspVM2=$(az resource list -g ${resourceGroup} --resource-type Microsoft.Compute/virtualMachines --name ${{ env.managedServerPrefix }}StorageVM2 --query [0].name -o tsv)
+          if [ -z "$mspVM2" ]; then
+            echo "Add-node failure: new machine ${{ env.managedServerPrefix }}StorageVM2 does not exist."
             exit 1
           fi
 
