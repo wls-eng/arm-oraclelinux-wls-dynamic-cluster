@@ -209,7 +209,7 @@
       "name_linuxImageVersion": "[last(split(parameters('skuUrnVersion'),';'))]",
       "name_nic": "_NIC",
       "name_publicIPAddress": "_PublicIP",
-      "name_scriptELKConfiguration": "elkIntegration.sh",
+      "name_scriptELKConfiguration": "elkIntegrationForDynamicCluster.sh",
       "name_scriptFile": "addNodeToDynamicCluster.sh",
       "name_share": "wlsshare",
       "name_subnet": "Subnet",

@@ -23,7 +23,7 @@ cat <<EOF > ${parametersPath}
         "value": "${adminVMName}"
       },
       "elasticsearchPassword": {
-        "value": "elasticsearchPassword"
+        "value": "${elasticsearchPassword}"
       },
       "elasticsearchEndpoint": {
         "value": "${elasticsearchURI}"

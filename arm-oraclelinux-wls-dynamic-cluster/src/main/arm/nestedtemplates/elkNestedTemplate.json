@@ -29,13 +29,6 @@
                 "description": "Admin Server hosting VM name."
             }
         },
-        "dynamicClusterSize": {
-            "type": "int",
-            "defaultValue": 2,
-            "metadata": {
-                "description": "Number of Managed Servers that have been configured in the Dynamic Cluster."
-            }
-        },
         "elasticsearchEndpoint": {
             "type": "string",
             "defaultValue": "",
@@ -52,7 +45,7 @@
         },
         "elasticsearchUserName": {
             "type": "string",
-            "defaultValue": "",
+            "defaultValue": "elastic",
             "metadata": {
                 "description": "The credentials to distibute message with REST API to Elasticsearch instance."
             }
@@ -98,6 +91,15 @@
                 "description": "Number of VMs that have been deployed to host managed cache server, please set the value if your cluster is Coherence cluster."
             }
         },
+        "numberOfManagedApplicationInstances": {
+            "type": "int",
+            "defaultValue": 2,
+            "minValue": 1,
+            "maxValue": 20,
+            "metadata": {
+                "description": "Number of VMs that have been deployed to host managed application server."
+            }
+        },
         "wlsDomainName": {
             "type": "string",
             "defaultValue": "wlsd",
@@ -126,7 +128,7 @@
         "const_wlsAdminPort": "7001",
         "const_wlsDomainPath": "[concat('/u01/domains/', parameters('wlsDomainName'))]",
         "const_wlsHome": "/u01/app/wls/install/oracle/middleware/oracle_home",
-        "name_scriptELKConfiguration": "elkIntegration.sh"
+        "name_scriptELKConfiguration": "elkIntegrationForDynamicCluster.sh"
     },
     "functions": [
         {
@@ -189,7 +191,7 @@
             "location": "[parameters('location')]",
             "copy": {
                 "name": "appVirtualMachineExtensionLoop",
-                "count": "[parameters('dynamicClusterSize')]"
+                "count": "[parameters('numberOfManagedApplicationInstances')]"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), 'newuserscript')]"

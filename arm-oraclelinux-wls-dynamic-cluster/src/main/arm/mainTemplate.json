@@ -539,9 +539,6 @@
                     "adminVMName": {
                         "value": "[parameters('adminVMName')]"
                     },
-                    "dynamicClusterSize": {
-                        "value": "[parameters('dynamicClusterSize')]"
-                    },
                     "elasticsearchEndpoint": {
                         "value": "[parameters('elasticsearchEndpoint')]"
                     },
@@ -562,6 +559,9 @@
                     },
                     "maxDynamicClusterSize": {
                         "value": "[parameters('maxDynamicClusterSize')]"
+                    },
+                    "numberOfManagedApplicationInstances": {
+                        "value": "[parameters('dynamicClusterSize')]"
                     },
                     "wlsDomainName": {
                         "value": "[parameters('wlsDomainName')]"
