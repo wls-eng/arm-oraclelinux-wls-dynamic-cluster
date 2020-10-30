@@ -524,6 +524,13 @@ function updateNetworkRules()
           sudo firewall-cmd --zone=public --add-port=$managedPort/tcp
           maxManagedIndex=$(($maxManagedIndex + 1))
         done
+
+        # open ports for coherence
+        sudo firewall-cmd --zone=public --add-port=$coherenceListenPort/tcp
+        sudo firewall-cmd --zone=public --add-port=$coherenceListenPort/udp
+        sudo firewall-cmd --zone=public --add-port=$coherenceLocalport-$coherenceLocalportAdjust/tcp
+        sudo firewall-cmd --zone=public --add-port=$coherenceLocalport-$coherenceLocalportAdjust/udp
+        sudo firewall-cmd --zone=public --add-port=7/tcp
         
         sudo firewall-cmd --zone=public --add-port=$nmPort/tcp
     fi
@@ -645,6 +652,9 @@ export startWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/startWebLogic.sh"
 export stopWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/bin/customStopWebLogic.sh"
 
 # Always index 0 is set as admin server
+export coherenceListenPort=7574
+export coherenceLocalport=42000
+export coherenceLocalportAdjust=42200
 export wlsAdminPort=7001
 export wlsSSLAdminPort=7002
 export wlsManagedPort=8001

@@ -689,6 +689,110 @@
                         "visible": "[bool(steps('section_elk').enableELK)]"
                     }
                 ]
+            },
+            {
+                "name": "section_coherence",
+                "label": "Coherence",
+                "subLabel": {
+                    "preValidation": "Configure Coherence.",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Coherence",
+                "elements": [
+                    {
+                        "name": "aboutCoherence",
+                        "type": "Microsoft.Common.TextBlock",
+                        "visible": true,
+                        "options": {
+                            "icon": "None",
+                            "text": "Selecting 'Yes' here and providing the configuration will cause the template to create a Coherence cluster, the WebLogic Domain will create a data tier configured with Managed Coherence cache servers.",
+                            "link": {
+                                "label": "Learn more",
+                                "uri": "https://aka.ms/arm-oraclelinux-wls-coherence"
+                            }
+                        }
+                    },
+                    {
+                        "name": "enableCoherence",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Use Coherence cache?",
+                        "defaultValue": "No",
+                        "toolTip": "Select 'Yes' and provide required info to configure Coherence cluster.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Yes",
+                                    "value": "true"
+                                },
+                                {
+                                    "label": "No",
+                                    "value": "false"
+                                }
+                            ],
+                            "required": true
+                        }
+                    },
+                    {
+                        "name": "coherenceInfo",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Coherence settings",
+                        "elements": [
+                            {
+                                "name": "coherenceVMSizeSelect",
+                                "type": "Microsoft.Compute.SizeSelector",
+                                "label": "Coherence virtual machine size",
+                                "toolTip": "The size of virtual machine for Coherence cache servers.",
+                                "recommendedSizes": [
+                                    "[basics('vmSizeSelect')]"
+                                ],
+                                "constraints": {
+                                    "excludedSizes": [
+                                        "Standard_B1ls",
+                                        "Standard_A0",
+                                        "Basic_A0",
+                                        "Standard_B1s"
+                                    ]
+                                },
+                                "osPlatform": "Linux",
+                                "count": "1",
+                                "visible": true
+                            },
+                            {
+                                "name": "numberOfCoherenceStorageInstances",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Number of Coherence cache servers",
+                                "toolTip": "Number of Coherence cache instances, used to create virtual machines and WebLogic Managed Server.",
+                                "defaultValue": "1",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[0-9]+$",
+                                    "validationMessage": "The value must be a valid number."
+                                }
+                            },
+                            {
+                                "name": "enableCoherenceWebLocalStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Coherence Web Local Storage Enabled",
+                                "defaultValue": "Yes",
+                                "toolTip": "Specifies whether Local Storage is enabled for the Coherence*Web cluster tier",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Yes",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "label": "No",
+                                            "value": "false"
+                                        }
+                                    ],
+                                    "required": true
+                                }
+                            }
+                        ],
+                        "visible": "[bool(steps('section_coherence').enableCoherence)]"
+                    }
+                ]
             }
         ],
         "outputs": {
@@ -709,14 +813,18 @@
             "elasticsearchUserName": "[steps('section_elk').elkInfo.elasticsearchUserName]",
             "dynamicClusterSize": "[int(basics('basicsRequired').dynamicClusterSize)]",
             "enableAAD": "[bool(steps('section_aad').enableAAD)]",
+            "enableCoherence": "[bool(steps('section_coherence').enableCoherence)]",
+            "enableCoherenceWebLocalStorage": "[bool(if(bool(steps('section_coherence').enableCoherence),steps('section_coherence').coherenceInfo.enableCoherenceWebLocalStorage,'false'))]",
             "enableELK": "[bool(steps('section_elk').enableELK)]",
             "jdbcDataSourceName": "[steps('section_database').databaseConnectionInfo.jdbcDataSourceName]",
             "logsToIntegrate": "[steps('section_elk').elkInfo.logsToIntegrate]",
             "managedServerPrefix": "[basics('basicsOptional').managedServerPrefix]",
             "maxDynamicClusterSize": "[int(basics('basicsRequired').maxDynamicClusterSize)]",
+            "numberOfCoherenceCacheInstances": "[int(if(bool(steps('section_coherence').enableCoherence),steps('section_coherence').coherenceInfo.numberOfCoherenceCacheInstances,'1'))]",
             "portsToExpose": "[basics('basicsOptional').portsToExpose]",
             "skuUrnVersion": "[basics('skuUrnVersion')]",
             "vmSizeSelect": "[basics('vmSizeSelect')]",
+            "vmSizeSelectForCoherence": "[steps('section_coherence').coherenceInfo.coherenceVMSizeSelect]",
             "wlsDomainName": "[basics('basicsOptional').wlsDomainName]",
             "wlsLDAPGroupBaseDN": "[steps('section_aad').aadInfo.wlsLDAPGroupBaseDN]",
             "wlsLDAPPrincipal": "[steps('section_aad').aadInfo.wlsLDAPPrincipal]",

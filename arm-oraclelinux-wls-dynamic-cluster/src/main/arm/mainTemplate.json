@@ -124,6 +124,20 @@
                 "description": "Bool value, if it's set to true, will enable Azure Active Directory after WebLogic Server starts."
             }
         },
+        "enableCoherence": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "If true, create Coherence cluster with data tier for cache."
+            }
+        },
+        "enableCoherenceWebLocalStorage": {
+            "defaultValue": true,
+            "type": "bool",
+            "metadata": {
+                "description": "Specifies whether Local Storage is enabled for the Coherence*Web cluster tier."
+            }
+        },
         "enableDB": {
             "defaultValue": false,
             "type": "bool",
@@ -174,6 +188,15 @@
                 "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
             }
         },
+         "numberOfCoherenceCacheInstances": {
+            "defaultValue": 1,
+            "type": "int",
+            "minValue": 1,
+            "maxValue": 10,
+            "metadata": {
+                "description": "Number of Coherence cache instances, used to create virtual machines and Managed Server."
+            }
+        },
         "portsToExpose": {
             "defaultValue": "80,443,7001-9000",
             "type": "string",
@@ -207,6 +230,13 @@
             "type": "string",
             "metadata": {
                 "description": "Select appropriate VM Size as per requirement"
+            }
+        },
+        "vmSizeSelectForCoherence": {
+            "defaultValue": "Standard_A3",
+            "type": "string",
+            "metadata": {
+                "description": "Select appropriate VM Size for Coherence"
             }
         },
         "wlsDomainName": {
@@ -276,7 +306,8 @@
         "name_aadLinkedTemplateName": "aadNestedTemplate.json",
         "name_clusterLinkedTemplateName": "clusterTemplate.json",
         "name_dbLinkedTemplateName": "dbTemplate.json",
-        "name_elkLinkedTemplateName": "elkNestedTemplate.json"
+        "name_elkLinkedTemplateName": "elkNestedTemplate.json",
+        "name_coherenceTemplateName": "coherenceTemplate.json"
     },
     "resources": [
         {
@@ -545,6 +576,75 @@
             }
         },
         {
+            "name": "coherenceTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'elkLinkedTemplate')]"
+            ],
+            "apiVersion": "${azure.apiVersion}",
+            "condition": "[parameters('enableCoherence')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('name_coherenceTemplateName')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    },
+                    "adminPasswordOrKey": {
+                        "value": "[parameters('adminPasswordOrKey')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminVMName": {
+                        "value": "[parameters('adminVMName')]"
+                    },
+                    "dnsLabelPrefix": {
+                        "value": "[parameters('dnsLabelPrefix')]"
+                    },
+                    "enableCoherenceWebLocalStorage": {
+                        "value": "[parameters('enableCoherenceWebLocalStorage')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "managedServerPrefix": {
+                        "value": "[parameters('managedServerPrefix')]"
+                    },
+                    "numberOfCoherenceCacheInstances": {
+                        "value": "[parameters('numberOfCoherenceCacheInstances')]"
+                    },
+                    "skuUrnVersion": {
+                        "value": "[parameters('skuUrnVersion')]"
+                    },
+                    "storageAccountName": {
+                        "value": "[reference('clusterLinkedTemplate', '${azure.apiVersion}').outputs.storageAccountName.value]"
+                    },
+                    "usePreviewImage": {
+                        "value": "[parameters('usePreviewImage')]"
+                    },
+                    "vmSizeSelectForCoherence": {
+                        "value": "[parameters('vmSizeSelectForCoherence')]"
+                    },
+                    "wlsDomainName": {
+                        "value": "[parameters('wlsDomainName')]"
+                    },
+                    "wlsPassword": {
+                        "value": "[parameters('wlsPassword')]"
+                    },
+                    "wlsUserName": {
+                        "value": "[parameters('wlsUserName')]"
+                    }
+                }
+            }
+        },
+        {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "${azure.apiVersion}",
             "name": "${dynamic.end}",
@@ -552,7 +652,8 @@
                 "[resourceId('Microsoft.Resources/deployments', 'clusterLinkedTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'aadLinkedTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'dbLinkedTemplate')]",
-                "[resourceId('Microsoft.Resources/deployments', 'elkLinkedTemplate')]"
+                "[resourceId('Microsoft.Resources/deployments', 'elkLinkedTemplate')]",
+                "[resourceId('Microsoft.Resources/deployments', 'coherenceTemplate')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -569,23 +670,23 @@
     "outputs": {
         "wlsDomainLocation": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.wlsDomainLocation.value]"
+            "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.wlsDomainLocation.value]"
         },
         "adminHostName": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminHostName.value]"
+            "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.adminHostName.value]"
         },
         "adminConsole": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminConsole.value]"
+            "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.adminConsole.value]"
         },
         "adminSecuredConsole": {
             "type": "string",
-            "value": "[reference('clusterLinkedTemplate','2019-10-01').outputs.adminSecuredConsole.value]"
+            "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.adminSecuredConsole.value]"
         },
         "logIndex": {
             "type": "string",
-            "value": "[if(parameters('enableELK'), reference('elkLinkedTemplate', '2019-10-01').outputs.logIndex.value, '')]"
+            "value": "[if(parameters('enableELK'), reference('elkLinkedTemplate', '${azure.apiVersion}').outputs.logIndex.value, '')]"
         }
     }
 }
