@@ -26,6 +26,10 @@ parametersList+=(${scriptsDir}/parameters-db.json)
 bash ${scriptsDir}/gen-parameters-aad.sh ${scriptsDir}/parameters-aad.json $githubUserName $testbranchName
 parametersList+=(${scriptsDir}/parameters-aad.json)
 
+# parameters for cluster+coherence
+bash ${scriptsDir}/gen-parameters-elk.sh ${scriptsDir}/parameters-coherence.json $githubUserName $testbranchName
+parametersList+=(${scriptsDir}/parameters-coherence.json)
+
 # parameters for cluster+elk
 bash ${scriptsDir}/gen-parameters-elk.sh ${scriptsDir}/parameters-elk.json $githubUserName $testbranchName
 parametersList+=(${scriptsDir}/parameters-elk.json)
