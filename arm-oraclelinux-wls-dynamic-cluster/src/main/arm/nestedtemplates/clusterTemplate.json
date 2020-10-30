@@ -572,15 +572,19 @@
         },
         "adminHostName": {
             "type": "string",
-            "value": "[reference(variables('name_outputAdminHost'), '2019-11-01').dnsSettings.fqdn]"
+            "value": "[reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn]"
         },
         "adminConsole": {
             "type": "string",
-            "value": "[concat('http://',reference(variables('name_outputAdminHost'), '2019-11-01').dnsSettings.fqdn,':7001/console')]"
+            "value": "[concat('http://',reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn,':7001/console')]"
         },
         "adminSecuredConsole": {
             "type": "string",
-            "value": "[concat('https://',reference(variables('name_outputAdminHost'), '2019-11-01').dnsSettings.fqdn,':7002/console')]"
+            "value": "[concat('https://',reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn,':7002/console')]"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "value": "[variables('name_storageAccount')]"
         }
     }
 }
