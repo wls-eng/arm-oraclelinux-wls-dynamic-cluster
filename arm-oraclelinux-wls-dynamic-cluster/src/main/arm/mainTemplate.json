@@ -539,9 +539,6 @@
                     "adminVMName": {
                         "value": "[parameters('adminVMName')]"
                     },
-                    "dynamicClusterSize": {
-                        "value": "[parameters('dynamicClusterSize')]"
-                    },
                     "elasticsearchEndpoint": {
                         "value": "[parameters('elasticsearchEndpoint')]"
                     },
@@ -562,6 +559,9 @@
                     },
                     "maxDynamicClusterSize": {
                         "value": "[parameters('maxDynamicClusterSize')]"
+                    },
+                    "numberOfManagedApplicationInstances": {
+                        "value": "[parameters('dynamicClusterSize')]"
                     },
                     "wlsDomainName": {
                         "value": "[parameters('wlsDomainName')]"
@@ -608,11 +608,29 @@
                     "dnsLabelPrefix": {
                         "value": "[parameters('dnsLabelPrefix')]"
                     },
+                    "elasticsearchEndpoint": {
+                        "value": "[parameters('elasticsearchEndpoint')]"
+                    },
+                    "elasticsearchPassword": {
+                        "value": "[parameters('elasticsearchPassword')]"
+                    },
+                    "elasticsearchUserName": {
+                        "value": "[parameters('elasticsearchUserName')]"
+                    },
                     "enableCoherenceWebLocalStorage": {
                         "value": "[parameters('enableCoherenceWebLocalStorage')]"
                     },
+                    "enableELK": {
+                        "value": "[parameters('enableELK')]"
+                    },
                     "location": {
                         "value": "[parameters('location')]"
+                    },
+                    "logIndex": {
+                        "value": "[if(parameters('enableELK'), reference('elkLinkedTemplate', '${azure.apiVersion}').outputs.logIndex.value, '')]"
+                    },
+                    "logsToIntegrate": {
+                        "value": "[parameters('logsToIntegrate')]"
                     },
                     "managedServerPrefix": {
                         "value": "[parameters('managedServerPrefix')]"

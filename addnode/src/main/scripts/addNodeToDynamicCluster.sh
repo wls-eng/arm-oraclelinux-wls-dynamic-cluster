@@ -574,7 +574,7 @@ start_cluster
 echo "enable ELK? ${enableELK}"
 if [[ "${enableELK,,}" == "true" ]];then
     echo "Set up ELK..."
-    ${SCRIPT_PWD}/elkIntegration.sh \
+    ${SCRIPT_PWD}/elkIntegrationForDynamicCluster.sh \
         ${oracleHome} \
         ${wlsAdminURL} \
         ${managedServerPrefix} \

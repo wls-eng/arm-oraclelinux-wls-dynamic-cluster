@@ -7,7 +7,7 @@ function echo_stderr() {
 
 #Function to display usage message
 function usage() {
-    echo_stderr "./elkIntegration.sh <oracleHome> <wlsAdminURL> <managedServerPrefix> <wlsUserName> <wlsPassword> <wlsAdminServerName> <elasticURI> <elasticUserName> <elasticPassword> <wlsDomainName> <wlsDomainPath> <logsToIntegrate> <index> <logIndex> <maxDynamicClusterSize>"
+    echo_stderr "./elkIntegrationForDynamicCluster.sh <oracleHome> <wlsAdminURL> <managedServerPrefix> <wlsUserName> <wlsPassword> <wlsAdminServerName> <elasticURI> <elasticUserName> <elasticPassword> <wlsDomainName> <wlsDomainPath> <logsToIntegrate> <index> <logIndex> <maxDynamicClusterSize>"
 }
 
 function validate_input() {
