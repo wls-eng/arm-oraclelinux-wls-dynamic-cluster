@@ -75,7 +75,7 @@ jobs:
       - name: Create a new branch with development pids in nestedtemplates
         run: |
           current=`pwd`
-          echo "##[set-env name=current;]${current}"
+          echo "current=${current}" >> $GITHUB_ENV
           cd arm-oraclelinux-wls-dynamic-cluster-dev/arm-oraclelinux-wls-dynamic-cluster/src/main/arm/nestedtemplates
           git config --global core.longpaths true
           git config --global user.email $userEmail
@@ -102,11 +102,13 @@ jobs:
 
       - name: Get version information from arm-oraclelinux-wls-dynamic-cluster/pom.xml
         id: version
-        run: echo "##[set-env name=version;]$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/pom.xml)"
+        run: |
+          version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/pom.xml)
+          echo "version=${version}" >> $GITHUB_ENV
       - name: Print version
         run: echo $version
       - name: Generate artifact name
-        run: echo "##[set-env name=artifactName;]arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly"
+        run: echo "artifactName=arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly" >> $GITHUB_ENV
       - name: Print artifact name
         run: echo $artifactName
       - name: Output artifact name
@@ -130,11 +132,13 @@ jobs:
 
       - name: Get version information from addnode/pom.xml
         id: addnode_version
-        run: echo "##[set-env name=addnode_version;]$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode/pom.xml)"
+        run: |
+          version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode/pom.xml)
+          echo "addnode_version=${version}" >> $GITHUB_ENV
       - name: Print addnode template version
         run: echo $addnode_version
       - name: Generate artifact name
-        run: echo "##[set-env name=addnode_artifactName;]arm-oraclelinux-wls-dynamic-cluster-addnode-$addnode_version-arm-assembly"
+        run: echo "addnode_artifactName=arm-oraclelinux-wls-dynamic-cluster-addnode-$addnode_version-arm-assembly" >> $GITHUB_ENV
       - name: Print addnode template artifact name
         run: echo $addnode_artifactName
       - name: Output addnode template artifact name
@@ -236,12 +240,14 @@ jobs:
           path: arm-oraclelinux-wls-dynamic-cluster
       - name: Get version information from arm-oraclelinux-wls-dynamic-cluster/pom.xml
         id: version
-        run: echo "##[set-env name=version;]$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/pom.xml)"
+        run: |
+          version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/pom.xml)
+          echo "version=${version}" >> $GITHUB_ENV
       - name: Output artifact name for Download action
         id: artifact_file
         run: |
           artifactName=arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly
-          echo "##[set-env name=artifactName;]${artifactName}"
+          echo "artifactName=${artifactName}" >> $GITHUB_ENV
           echo "##[set-output name=artifactName;]${artifactName}"
       - name: Download artifact for deployment
         uses: actions/download-artifact@v1
@@ -256,16 +262,17 @@ jobs:
         run: |
           imageUrn="${{ matrix.images }}"
           sku=${imageUrn%%;*}
-          echo "##[set-env name=sku;]${sku}"
+          echo "sku=${sku}" >> $GITHUB_ENV
+          echo ${resourceGroupPrefix}
+          resourceGroup=$(echo "${resourceGroupPrefix}-${sku}" | sed "s/_//g")
+          echo "resourceGroup=${resourceGroup}" >> $GITHUB_ENV
       - name: Create Resource Group
         id: create-resource-group
         uses: azure/CLI@v1
         with:
           azcliversion: ${{ env.azCliVersion }}
           inlineScript: |
-            resourceGroup=${{ env.resourceGroupPrefix }}-${sku}
             echo "create resource group" $resourceGroup
-            echo "##[set-env name=resourceGroup;]${resourceGroup}"
             az group create --verbose --name $resourceGroup --location ${location}
 
       - name: Prepare deployed parameters and test script
@@ -342,7 +349,7 @@ jobs:
         id: get-ip-address
         run: |
           myIP=$(dig @ns1.google.com TXT o-o.myaddr.l.google.com +short)
-          echo "##[set-env name=myIP;]${myIP}"
+          echo "myIP=${myIP}" >> $GITHUB_ENV
 
       - name: Add ip address to security rule to access the wls machine
         id: add-ip-to-security-rule
@@ -392,8 +399,10 @@ jobs:
               --resource-group $resourceGroup \
               --name $adminVMName -d \
               --query publicIps -o tsv)
-            echo "VM Public IP ${publicIp}"
-            echo "##[set-env name=wlsPublicIP;]${publicIP}"
+            echo "##[set-output name=publicIP;]${publicIP}"
+      - name: Create environment variable for AdminServer IP
+        id: env-admin-ip
+        run: echo "wlsPublicIP=${{steps.query-wls-admin-ip.outputs.publicIP}}" >> $GITHUB_ENV
 
       - name: Query public IP of managedServerVM1
         id: query-wls-managed-ip
@@ -406,8 +415,10 @@ jobs:
               --resource-group $resourceGroup \
               --name $managedServerVM -d \
               --query publicIps -o tsv)
-            echo "VM Public IP ${publicIp}"
-            echo "##[set-env name=ms1PublicIP;]${publicIP}"
+            echo "##[set-output name=publicIP;]${publicIP}"
+      - name: Create environment variable for managedServerVM1 IP
+        id: env-managedserver-vm1-ip
+        run: echo "ms1PublicIP=${{steps.query-wls-managed-ip.outputs.publicIP}}" >> $GITHUB_ENV
 
       - name: Verify WebLogic Server Installation
         id: verify-wls
@@ -502,7 +513,7 @@ jobs:
         run: |
           addnodeVersion=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode/pom.xml)
           artifactNameOfAddnode=arm-oraclelinux-wls-dynamic-cluster-addnode-$addnodeVersion-arm-assembly
-          echo "##[set-env name=artifactNameOfAddnode;]${artifactNameOfAddnode}"
+          echo "artifactNameOfAddnode=${artifactNameOfAddnode}" >> $GITHUB_ENV
           echo "##[set-output name=artifactNameOfAddnode;]${artifactNameOfAddnode}"
       - name: Download artifact for deployment
         uses: actions/download-artifact@v1
@@ -564,7 +575,7 @@ jobs:
         run: |
           deleteNodeVersion=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/deletenode/pom.xml)
           artifactNameOfDeleteNode=arm-oraclelinux-wls-dynamic-cluster-deletenode-$deleteNodeVersion-arm-assembly
-          echo "##[set-env name=artifactNameOfDeleteNode;]${artifactNameOfDeleteNode}"
+          echo "artifactNameOfDeleteNode=${artifactNameOfDeleteNode}" >> $GITHUB_ENV
           echo "##[set-output name=artifactNameOfDeleteNode;]${artifactNameOfDeleteNode}"
       - name: Download artifact for deployment
         uses: actions/download-artifact@v1
