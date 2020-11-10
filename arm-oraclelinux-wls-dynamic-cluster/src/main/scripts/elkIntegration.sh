@@ -193,7 +193,7 @@ EOF
 EOF
         count=1
         while [ $count -le $maxDynamicClusterSize ]; do
-            serverName="msp"${count}
+            serverName=${managedServerPrefix}${count}
             wlsLogPath="${wlsDomainPath}/servers/${serverName}/logs"
             if [ $count == $maxDynamicClusterSize ]; then
                 cat <<EOF >>/etc/logstash/conf.d/weblogic-logs.conf
@@ -236,7 +236,7 @@ EOF
 EOF
         count=1
         while [ $count -le $maxDynamicClusterSize ]; do
-            serverName="msp"${count}
+            serverName=${managedServerPrefix}${count}
             wlsLogPath="${wlsDomainPath}/servers/${serverName}/logs"
             if [ $count == $maxDynamicClusterSize ]; then
                 cat <<EOF >>/etc/logstash/conf.d/weblogic-logs.conf
@@ -274,7 +274,7 @@ EOF
 EOF
         count=1
         while [ $count -le $maxDynamicClusterSize ]; do
-            serverName="msp"${count}
+            serverName=${managedServerPrefix}${count}
             wlsLogPath="${wlsDomainPath}/servers/${serverName}/logs"
             if [ $count == $maxDynamicClusterSize ]; then
                 cat <<EOF >>/etc/logstash/conf.d/weblogic-logs.conf
@@ -317,7 +317,7 @@ EOF
 EOF
         count=1
         while [ $count -le $maxDynamicClusterSize ]; do
-            serverName="msp"${count}
+            serverName=${managedServerPrefix}${count}
             wlsLogPath="${wlsDomainPath}/servers/${serverName}/logs"
             if [ $count == $maxDynamicClusterSize ]; then
                 cat <<EOF >>/etc/logstash/conf.d/weblogic-logs.conf
@@ -360,7 +360,7 @@ EOF
 EOF
         count=1
         while [ $count -le $maxDynamicClusterSize ]; do
-            serverName="msp"${count}
+            serverName=${managedServerPrefix}${count}
             wlsLogPath="${wlsDomainPath}/servers/${serverName}/logs"
             if [ $count == $maxDynamicClusterSize ]; then
                 cat <<EOF >>/etc/logstash/conf.d/weblogic-logs.conf
@@ -476,7 +476,7 @@ EOF
     if [ $index -eq 0 ]; then
         serverName=$wlsAdminServerName
     else
-        serverName="msp"${index}
+        serverName=${managedServerPrefix}${index}
     fi
     wlsLogPath="${wlsDomainPath}/servers/${serverName}/logs"
     privateIP=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1 -d'/')
@@ -530,7 +530,7 @@ filter {
         add_field => { "internal_ip" => "${privateIP}" }
     }
 
-    if [type] == "${wlsAdminServerName}.log" or [type] =~ /^msp\d+.log/ {
+    if [type] == "${wlsAdminServerName}.log" or [type] =~ /^${managedServerPrefix}\d+.log/ {
         mutate { replace => { type => "weblogic_server_log" } }
         # match rid
         grok {
@@ -637,7 +637,7 @@ filter {
             }
         }
     }
-    else if [type] == "${wlsAdminServerName}.out" or [type] =~ /^msp\d+.out/ {
+    else if [type] == "${wlsAdminServerName}.out" or [type] =~ /^${managedServerPrefix}\d+.out/ {
         mutate { replace => { type => "weblogic_std_log" } }
         grok {
             patterns_dir=> ["/etc/logstash/patterns"]

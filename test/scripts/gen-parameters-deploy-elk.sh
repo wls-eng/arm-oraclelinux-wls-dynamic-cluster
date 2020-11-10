@@ -16,11 +16,6 @@ managedServerPrefix=${12}
 maxDynamicClusterSize=${13}
 dynamicClusterSize=${14}
 
-elasticsearchPort=${elasticsearchURI#*:}
-elasticsearchURI=${elasticsearchURI%%:*}
-echo "elasticsearchPort: ${elasticsearchPort}"
-echo "elasticsearchURI: ${elasticsearchURI}"
-
 
 cat <<EOF > ${parametersPath}
 {
@@ -30,10 +25,7 @@ cat <<EOF > ${parametersPath}
       "elasticsearchPassword": {
         "value": "elasticsearchPassword"
       },
-      "elasticsearchPort": {
-        "value": "${elasticsearchPort}"
-      },
-      "elasticsearchURI": {
+      "elasticsearchEndpoint": {
         "value": "${elasticsearchURI}"
       },
       "elasticsearchUserName": {

@@ -36,25 +36,18 @@
                 "description": "Number of Managed Servers that have been configured in the Dynamic Cluster."
             }
         },
+        "elasticsearchEndpoint": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Endpoint of the Elasticsearch instance."
+            }
+        },
         "elasticsearchPassword": {
             "type": "securestring",
             "defaultValue": "[newGuid()]",
             "metadata": {
                 "description": "The credentials to distibute message with REST API to Elasticsearch instance."
-            }
-        },
-        "elasticsearchPort": {
-            "type": "string",
-            "defaultValue": "9243",
-            "metadata": {
-                "description": "Port of the Elasticsearch instance."
-            }
-        },
-        "elasticsearchURI": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Host name of the Elasticsearch instance."
             }
         },
         "elasticsearchUserName": {
@@ -96,6 +89,15 @@
                 "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
             }
         },
+        "numberOfManagedCacheInstances": {
+            "type": "int",
+            "defaultValue": 0,
+            "minValue": 0,
+            "maxValue": 20,
+            "metadata": {
+                "description": "Number of VMs that have been deployed to host managed cache server, please set the value if your cluster is Coherence cluster."
+            }
+        },
         "wlsDomainName": {
             "type": "string",
             "defaultValue": "wlsd",
@@ -119,6 +121,7 @@
     "variables": {
         "const_adminServerName": "admin",
         "const_logIndex": "[concat('azure-weblogic-dynamic-cluster-', parameters('guidValue'))]",
+        "const_managedCacheVMPrefix": "[concat(parameters('managedServerPrefix'),'StorageVM')]",
         "const_managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
         "const_wlsAdminPort": "7001",
         "const_wlsDomainPath": "[concat('/u01/domains/', parameters('wlsDomainName'))]",
@@ -162,12 +165,8 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "${azure.apiVersion}",
-            "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'), copyIndex(),'/newuserscript'))]",
+            "name": "[concat(parameters('adminVMName'),'/newuserscript')]",
             "location": "[parameters('location')]",
-            "copy": {
-                "name": "virtualMachineExtensionLoop",
-                "count": "[add(parameters('dynamicClusterSize'),1)]"
-            },
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
                 "type": "CustomScript",
@@ -179,7 +178,61 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh',' ',variables('name_scriptELKConfiguration'),' ', variables('const_wlsHome'), ' ', concat(parameters('adminVMName'), ':', variables('const_wlsAdminPort')), ' ' ,parameters('managedServerPrefix'), ' ', parameters('wlsUserName'), ' ', parameters('wlsPassword'), ' ', variables('const_adminServerName'), ' ', concat(parameters('elasticsearchURI'),':',parameters('elasticsearchPort')),' ', parameters('elasticsearchUserName'),' ', parameters('elasticsearchPassword'), ' ', parameters('wlsDomainName'),' ', variables('const_wlsDomainPath'),' ', array.join(parameters('logsToIntegrate')), ' ',copyIndex(), ' ', variables('const_logIndex'), ' ', parameters('maxDynamicClusterSize'))]"
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptELKConfiguration'),' ', variables('const_wlsHome'), ' ', concat(parameters('adminVMName'), ':', variables('const_wlsAdminPort')), ' ' ,parameters('managedServerPrefix'), ' ', parameters('wlsUserName'), ' ', parameters('wlsPassword'), ' ', variables('const_adminServerName'), ' ', parameters('elasticsearchEndpoint'),' ', parameters('elasticsearchUserName'),' ', parameters('elasticsearchPassword'), ' ', parameters('wlsDomainName'),' ', variables('const_wlsDomainPath'),' ', array.join(parameters('logsToIntegrate')), ' ',0, ' ', variables('const_logIndex'), ' ', parameters('maxDynamicClusterSize'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "[concat(variables('const_managedVMPrefix'), copyIndex(1),'/newuserscript')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "appVirtualMachineExtensionLoop",
+                "count": "[parameters('dynamicClusterSize')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), 'newuserscript')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[uri(parameters('_artifactsLocationELKTemplate'), concat('../scripts/', variables('name_scriptELKConfiguration'), parameters('_artifactsLocationSasToken')))]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptELKConfiguration'),' ', variables('const_wlsHome'), ' ', concat(parameters('adminVMName'), ':', variables('const_wlsAdminPort')), ' ' ,parameters('managedServerPrefix'), ' ', parameters('wlsUserName'), ' ', parameters('wlsPassword'), ' ', variables('const_adminServerName'), ' ', parameters('elasticsearchEndpoint'),' ', parameters('elasticsearchUserName'),' ', parameters('elasticsearchPassword'), ' ', parameters('wlsDomainName'),' ', variables('const_wlsDomainPath'),' ', array.join(parameters('logsToIntegrate')), ' ',copyIndex(1), ' ', variables('const_logIndex'), ' ', parameters('maxDynamicClusterSize'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "${azure.apiVersion}",
+            "name": "[concat(variables('const_managedCacheVMPrefix'), copyIndex(1),'/newuserscript')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "cacheVirtualMachineExtensionLoop",
+                "count": "[parameters('numberOfManagedCacheInstances')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), 'newuserscript')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[uri(parameters('_artifactsLocationELKTemplate'), concat('../scripts/', variables('name_scriptELKConfiguration'), parameters('_artifactsLocationSasToken')))]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptELKConfiguration'),' ', variables('const_wlsHome'), ' ', concat(parameters('adminVMName'), ':', variables('const_wlsAdminPort')), ' ' ,concat(parameters('managedServerPrefix'), 'Storage'), ' ', parameters('wlsUserName'), ' ', parameters('wlsPassword'), ' ', variables('const_adminServerName'), ' ', parameters('elasticsearchEndpoint'),' ', parameters('elasticsearchUserName'),' ', parameters('elasticsearchPassword'), ' ', parameters('wlsDomainName'),' ', variables('const_wlsDomainPath'),' ', array.join(parameters('logsToIntegrate')), ' ',copyIndex(1), ' ', variables('const_logIndex'), ' ', parameters('maxDynamicClusterSize'))]"
                 }
             }
         },
@@ -188,7 +241,8 @@
             "apiVersion": "${azure.apiVersion}",
             "name": "${dynamic.elk.end}",
             "dependsOn": [
-                "virtualMachineExtensionLoop"
+                "appVirtualMachineExtensionLoop",
+                "cacheVirtualMachineExtensionLoop"
             ],
             "properties": {
                 "mode": "Incremental",

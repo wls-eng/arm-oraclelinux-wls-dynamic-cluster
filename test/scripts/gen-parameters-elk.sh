@@ -24,10 +24,7 @@ cat <<EOF >${parametersPath}
         "elasticsearchPassword": {
             "value": "GEN-UNIQUE"
         },
-        "elasticsearchPort": {
-            "value": "GEN-UNIQUE"
-        },
-        "elasticsearchURI": {
+        "elasticsearchEndpoint": {
             "value": "GEN-UNIQUE"
         },
         "elasticsearchUserName": {
