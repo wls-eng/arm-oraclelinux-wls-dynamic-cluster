@@ -60,11 +60,39 @@
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             }
         },
+        "elasticsearchEndpoint": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Endpoint of the Elasticsearch instance."
+            }
+        },
+        "elasticsearchPassword": {
+            "type": "securestring",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "The credentials to distribute message to Elasticsearch instance with REST API."
+            }
+        },
+        "elasticsearchUserName": {
+            "type": "string",
+            "defaultValue": "elastic",
+            "metadata": {
+                "description": "The credentials to distribute message to Elasticsearch instance with REST API."
+            }
+        },
         "enableCoherenceWebLocalStorage": {
             "defaultValue": true,
             "type": "bool",
             "metadata": {
                 "description": "Specifies whether Local Storage is enabled for the Coherence*Web cluster tier."
+            }
+        },
+        "enableELK": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "If true, use the supplied parameters to distribute WebLogic Server logs to the Elasticsearch instance."
             }
         },
         "guidValue": {
@@ -75,6 +103,21 @@
             "type": "string",
             "metadata": {
                 "description": "Location for all resources."
+            }
+        },
+        "logIndex": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Elasticsearch index you expect to export the logs to."
+            }
+        },
+        "logsToIntegrate": {
+            "type": "array",
+            "defaultValue": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput", "NodeManagerLog" ],
+            "allowedValues": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput","NodeManagerLog" ],
+            "metadata": {
+                "description": "Specify the expeted logs to integrate, you must input at least one log."
             }
         },
         "managedServerPrefix": {
@@ -173,6 +216,7 @@
         "name_nic": "_NIC",
         "name_publicIPAddress": "_PublicIP",
         "name_scriptFile": "setupCoherence.sh",
+        "name_scriptELKConfiguration": "elkIntegrationForConfiguredCluster.sh",
         "name_share": "wlsshare",
         "name_subnet": "Subnet",
         "name_virtualNetwork": "[concat(parameters('wlsDomainName'),'_VNET')]",
@@ -180,6 +224,25 @@
         "name_wlsServerPrefix": "[concat(parameters('managedServerPrefix'),'Storage')]",
         "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]"
     },
+    "functions": [
+        {
+            "namespace": "array",
+            "members": {
+                "join": {
+                    "parameters": [
+                        {
+                            "name": "items",
+                            "type": "array"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[replace(replace(replace(string(parameters('items')), '[\"', ''), '\"]', ''), '\",\"', ',')]"
+                    }
+                }
+            }
+        }
+    ],
     "resources": [
         {
             "apiVersion": "${azure.apiVersion}",
@@ -334,11 +397,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocationCoherenceTemplate'), concat('../scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocationCoherenceTemplate'), concat('../scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocationCoherenceTemplate'), concat('../scripts/', variables('name_scriptELKConfiguration'), parameters('_artifactsLocationSasToken')))]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'), ' ', parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',if(equals(copyIndex(),0),'admin',concat(variables('name_wlsServerPrefix'),copyIndex())),' ', parameters('adminVMName'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ', parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', parameters('enableCoherenceWebLocalStorage'))]"
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'), ' ', parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',' ', parameters('adminVMName'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ', parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', parameters('enableCoherenceWebLocalStorage'), ' ',parameters('enableELK'),' ',parameters('elasticsearchEndpoint'),' ',parameters('elasticsearchUserName'),' ',parameters('elasticsearchPassword'),' ',array.join(parameters('logsToIntegrate')),' ',parameters('logIndex'),' ',variables('name_wlsServerPrefix'),' ',copyIndex())]"
                 }
             }
         },

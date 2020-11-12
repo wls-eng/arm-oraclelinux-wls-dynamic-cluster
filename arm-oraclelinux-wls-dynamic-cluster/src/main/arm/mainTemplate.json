@@ -608,11 +608,29 @@
                     "dnsLabelPrefix": {
                         "value": "[parameters('dnsLabelPrefix')]"
                     },
+                    "elasticsearchEndpoint": {
+                        "value": "[parameters('elasticsearchEndpoint')]"
+                    },
+                    "elasticsearchPassword": {
+                        "value": "[parameters('elasticsearchPassword')]"
+                    },
+                    "elasticsearchUserName": {
+                        "value": "[parameters('elasticsearchUserName')]"
+                    },
                     "enableCoherenceWebLocalStorage": {
                         "value": "[parameters('enableCoherenceWebLocalStorage')]"
                     },
+                    "enableELK": {
+                        "value": "[parameters('enableELK')]"
+                    },
                     "location": {
                         "value": "[parameters('location')]"
+                    },
+                    "logIndex": {
+                        "value": "[reference('elkLinkedTemplate', '${azure.apiVersion}').outputs.logIndex.value]"
+                    },
+                    "logsToIntegrate": {
+                        "value": "[parameters('logsToIntegrate')]"
                     },
                     "managedServerPrefix": {
                         "value": "[parameters('managedServerPrefix')]"

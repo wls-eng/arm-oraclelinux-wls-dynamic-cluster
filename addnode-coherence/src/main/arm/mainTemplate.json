@@ -54,6 +54,27 @@
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             }
         },
+        "elkSettings": {
+            "type": "object",
+            "defaultValue": {
+                "enable": false,
+                "elasticsearchEndpoint": "null",
+                "elasticsearchPassword": "null",
+                "elasticsearchUserName": "null",
+                "logIndex": "null",
+                "logsToIntegrate": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput", "NodeManagerLog" ]
+            },
+            "metadata": {
+                "description": "If enable is true, must specify all the properties of elkSettings. logsToIntegrate must be value of an array."
+            }
+        },
+        "enableCoherenceWebLocalStorage": {
+            "defaultValue": true,
+            "type": "bool",
+            "metadata": {
+                "description": "Specifies whether Local Storage is enabled for the Coherence*Web cluster tier."
+            }
+        },
         "guidValue": {
             "type": "string",
             "defaultValue": "[newGuid()]"
@@ -169,7 +190,8 @@
         "name_linuxImageVersion": "[last(split(parameters('skuUrnVersion'),';'))]",
         "name_nic": "_NIC",
         "name_publicIPAddress": "_PublicIP",
-        "name_scriptFile": "setupCoherence.sh",
+        "name_scriptCoherenceFile": "setupCoherence.sh",
+        "name_scriptELKConfiguration": "elkIntegrationForConfiguredCluster.sh",
         "name_share": "wlsshare",
         "name_subnet": "Subnet",
         "name_virtualNetwork": "[concat(parameters('wlsDomainName'),'_VNET')]",
@@ -177,6 +199,25 @@
         "name_wlsServerPrefix": "[concat(parameters('managedServerPrefix'),'Storage')]",
         "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]"
     },
+    "functions": [
+        {
+            "namespace": "array",
+            "members": {
+                "join": {
+                    "parameters": [
+                        {
+                            "name": "items",
+                            "type": "array"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[replace(replace(replace(string(parameters('items')), '[\"', ''), '\"]', ''), '\",\"', ',')]"
+                    }
+                }
+            }
+        }
+    ],
     "resources": [
         {
             "apiVersion": "${azure.apiVersion}",
@@ -331,11 +372,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri(parameters('_artifactsLocation'), concat('../../../arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]"
+                        "[uri(parameters('_artifactsLocation'), concat('../../../arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/', variables('name_scriptCoherenceFile'), parameters('_artifactsLocationSasToken')))]",
+                        "[uri(parameters('_artifactsLocation'), concat('../../../arm-oraclelinux-wls-dynamic-cluster/src/main/scripts/', variables('name_scriptELKConfiguration'), parameters('_artifactsLocationSasToken')))]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh',' ',variables('name_scriptFile'), ' ', parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',concat(variables('name_wlsServerPrefix'),copyIndex(variables('const_cacheServerIndexOffset'))),' ', parameters('adminVMName'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ', parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', 'true')]"
+                    "commandToExecute": "[concat('sh',' ',variables('name_scriptCoherenceFile'), ' ', parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',parameters('adminVMName'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ', parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value,' ', variables('const_mountPointPath'),' ', parameters('enableCoherenceWebLocalStorage'),' ',parameters('elkSettings').enable, ' ',parameters('elkSettings').elasticsearchEndpoint,' ', parameters('elkSettings').elasticsearchUserName,' ', parameters('elkSettings').elasticsearchPassword, ' ', array.join(parameters('elkSettings').logsToIntegrate), ' ',parameters('elkSettings').logIndex, ' ',variables('name_wlsServerPrefix'),' ',copyIndex(variables('const_cacheServerIndexOffset')))]"
                 }
             }
         },

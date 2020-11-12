@@ -7,7 +7,7 @@ function echo_stderr() {
 
 #Function to display usage message
 function usage() {
-    echo_stderr "./setupCoherence.sh <wlsDomainName> <wlsUserName> <wlsPassword> <wlsServerName> <adminVMName> <oracleHome> <wlsDomainPath> <storageAccountName> <storageAccountKey> <mountpointPath> <enableWebLocalStorage>"
+    echo_stderr "./setupCoherence.sh <wlsDomainName> <wlsUserName> <wlsPassword> <wlsServerName> <adminVMName> <oracleHome> <wlsDomainPath> <storageAccountName> <storageAccountKey> <mountpointPath> <enableWebLocalStorage> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <managedServerPrefix> <serverIndex>"
 }
 
 function installUtilities() {
@@ -69,6 +69,38 @@ function validateInput() {
 
     if [ -z "$enableWebLocalStorage" ]; then
         echo_stderr "enableWebLocalStorage is required. "
+    fi
+
+    if [ -z "$enableELK" ]; then
+        echo_stderr "enableELK is required. "
+    fi
+
+    if [ -z "$elasticURI" ]; then
+        echo_stderr "elasticURI is required. "
+    fi
+
+    if [ -z "$elasticUserName" ]; then
+        echo_stderr "elasticUserName is required. "
+    fi
+
+    if [ -z "$elasticPassword" ]; then
+        echo_stderr "elasticPassword is required. "
+    fi
+
+    if [ -z "$logsToIntegrate" ]; then
+        echo_stderr "logsToIntegrate is required. "
+    fi
+
+    if [ -z "$logIndex" ]; then
+        echo_stderr "logIndex is required. "
+    fi
+
+    if [ -z "$serverIndex" ]; then
+        echo_stderr "serverIndex is required. "
+    fi
+
+    if [ -z "$managedServerPrefix" ]; then
+        echo_stderr "managedServerPrefix is required. "
     fi
 }
 
@@ -441,7 +473,7 @@ for ((i = 0; i < $ELEMENTS; i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 11 ]; then
+if [ $# -ne 18 ]; then
     usage
     exit 1
 fi
@@ -449,14 +481,21 @@ fi
 export wlsDomainName=$1
 export wlsUserName=$2
 export wlsPassword=$3
-export wlsServerName=$4
-export adminVMName=$5
-export oracleHome=$6
-export wlsDomainPath=$7
-export storageAccountName=$8
-export storageAccountKey=$9
-export mountpointPath=${10}
-export enableWebLocalStorage=${11}
+export adminVMName=$4
+export oracleHome=$5
+export wlsDomainPath=$6
+export storageAccountName=$7
+export storageAccountKey=$8
+export mountpointPath=$9
+export enableWebLocalStorage=${10}
+export enableELK=${11}
+export elasticURI=${12}
+export elasticUserName=${13}
+export elasticPassword=${14}
+export logsToIntegrate=${15}
+export logIndex=${16}
+export managedServerPrefix=${17}
+export serverIndex=${18}
 
 export clientClusterName="cluster1"
 export coherenceClusterName="myCoherence"
@@ -474,11 +513,18 @@ export wlsAdminURL="${adminVMName}:7001"
 export wlsCoherenceUnicastPortRange="-Dcoherence.localport=$coherenceLocalport -Dcoherence.localport.adjust=$coherenceLocalportAdjust"
 export wlsServerTemplate="myServerTemplate"
 
+if [ ${serverIndex} -eq 0 ]; then
+    wlsServerName="admin"
+else
+    wlsServerName="${managedServerPrefix}${serverIndex}"
+fi
+
 validateInput
 cleanup
 
 if [ $wlsServerName == "admin" ]; then
     createCoherenceClusterModel
+    cleanup
 else
     installUtilities
     mountFileShare
@@ -488,6 +534,26 @@ else
     createNodeManagerService
     enabledAndStartNodeManagerService
     startManagedServer
-fi
+    cleanup
 
-cleanup
+    echo "enable ELK? ${enableELK}"
+    chmod ugo+x ${SCRIPT_PWD}/elkIntegrationForConfiguredCluster.sh
+    if [[ "${enableELK,,}" == "true" ]]; then
+        echo "Set up ELK..."
+        ${SCRIPT_PWD}/elkIntegrationForConfiguredCluster.sh \
+            ${oracleHome} \
+            ${wlsAdminURL} \
+            ${wlsUserName} \
+            ${wlsPassword} \
+            "admin" \
+            ${elasticURI} \
+            ${elasticUserName} \
+            ${elasticPassword} \
+            ${wlsDomainName} \
+            ${wlsDomainPath}/${wlsDomainName} \
+            ${logsToIntegrate} \
+            ${serverIndex} \
+            ${logIndex} \
+            ${managedServerPrefix}
+    fi
+fi
