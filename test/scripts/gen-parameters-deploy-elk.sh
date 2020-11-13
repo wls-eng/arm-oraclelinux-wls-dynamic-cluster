@@ -52,7 +52,7 @@ cat <<EOF > ${parametersPath}
       "maxDynamicClusterSize": {
         "value": ${maxDynamicClusterSize}
       },
-      "dynamicClusterSize": {
+      "numberOfManagedApplicationInstances": {
         "value": ${dynamicClusterSize}
       }
     }
