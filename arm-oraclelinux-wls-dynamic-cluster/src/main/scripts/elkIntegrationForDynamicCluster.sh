@@ -82,7 +82,7 @@ function validate_input() {
 # Redirect stderr logging enabled: true
 # Stack Traces to stdout: true
 function create_wls_log_model() {
-    cat <<EOF >${SCRIPT_PWD}/configure-wls-log.py
+    cat <<EOF >${SCRIPT_PATH}/configure-wls-log.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 shutdown('$clusterName', 'Cluster')
 try:
@@ -742,7 +742,8 @@ EOF
 
 function configure_wls_log() {
     echo "Configure WebLogic Log"
-    java $WLST_ARGS weblogic.WLST ${SCRIPT_PWD}/configure-wls-log.py
+    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
+    runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/configure-wls-log.py"
 
     errorCode=$?
     if [ $errorCode -eq 1 ]; then
@@ -766,7 +767,7 @@ function restart_admin_service() {
 }
 
 function restart_cluster() {
-    cat <<EOF >${SCRIPT_PWD}/restart-cluster.py
+    cat <<EOF >${SCRIPT_PATH}/restart-cluster.py
 # Connect to the AdminServer.
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 print "Restart cluster."
@@ -781,8 +782,8 @@ except:
 disconnect()
 EOF
 
-    . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
-    java $WLST_ARGS weblogic.WLST ${SCRIPT_PWD}/restart-cluster.py
+    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
+    runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/restart-cluster.py"
     errorCode=$?
     if [ $errorCode -eq 1 ]; then
         echo "Failed to restart cluster."
@@ -841,8 +842,16 @@ function shutdown_admin() {
 
 function cleanup() {
     echo "Cleaning up temporary files..."
-    rm -f ${SCRIPT_PWD}/*.py
+    rm -f -r ${SCRIPT_PATH}
     echo "Cleanup completed."
+}
+
+function create_temp_folder()
+{
+    export SCRIPT_PATH="/u01/tmp"
+    sudo rm -f -r ${SCRIPT_PATH}
+    sudo mkdir ${SCRIPT_PATH}
+    sudo rm -rf $SCRIPT_PATH/*
 }
 
 #main script starts here
@@ -876,6 +885,7 @@ export groupOracle="oracle"
 export clusterName="cluster1"
 export serverTemplate="myServerTemplate"
 
+create_temp_folder
 validate_input
 
 echo "start to configure ELK"
