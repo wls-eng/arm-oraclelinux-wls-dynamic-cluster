@@ -14,15 +14,10 @@ skuUrnVersion=${11}
 testbranchName=${12}
 gitUserName=${13}
 
-
-#Clean up parameters.json
-rm -f -r ${parametersPath}
-mkdir ${parametersPath}
-
-cat <<EOF > ${parametersPath}/parameters-test.json
+cat <<EOF >${parametersPath}
 {
 
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "\$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminUsername": {

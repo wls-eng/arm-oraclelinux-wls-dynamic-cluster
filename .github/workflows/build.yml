@@ -8,6 +8,7 @@ on:
   repository_dispatch:
 
 env:
+  adminConsolePort: 7001
   azCliVersion: 2.6.0
   dbName: wlsdb${{ github.run_id }}${{ github.run_number }}
   elkURI: ${{ secrets.ELK_URI }}
@@ -100,73 +101,35 @@ jobs:
             arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/arm/mainTemplate.json \
             ${userName} ${testbranchName} arm-oraclelinux-wls-dynamic-cluster/test/scripts
 
-      - name: Get version information from arm-oraclelinux-wls-dynamic-cluster/pom.xml
-        id: version
+      - name: Generate artifact file name and path
+        id: artifact_file
         run: |
           version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/pom.xml)
-          echo "version=${version}" >> $GITHUB_ENV
-      - name: Print version
-        run: echo $version
-      - name: Generate artifact name
-        run: echo "artifactName=arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly" >> $GITHUB_ENV
-      - name: Print artifact name
-        run: echo $artifactName
-      - name: Output artifact name
-        id: artifact_file
-        run: echo "##[set-output name=artifactName;]arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly"
-      - name: Generate zip package path
-        id: artifact_path
-        run: echo "##[set-output name=artifactPath;]arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/$artifactName"
-      - name: Output artifact path
-        run: echo $artifactPath
-        env:
-          artifactPath: ${{steps.package.outputs.artifactPath}}
-      - name: Unzip the package as upload action will zip again
-        run: unzip arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/$artifactName.zip -d arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/$artifactName
+          artifactName=arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly
+          unzip arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/$artifactName.zip -d arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/$artifactName
+          echo "##[set-output name=artifactName;]${artifactName}"
+          echo "##[set-output name=artifactPath;]arm-oraclelinux-wls-dynamic-cluster/arm-oraclelinux-wls-dynamic-cluster/target/$artifactName"
       - name: Archive arm-oraclelinux-wls-dynamic-cluster template
         uses: actions/upload-artifact@v1
         if: success()
         with:
           name: ${{steps.artifact_file.outputs.artifactName}}
-          path: ${{steps.artifact_path.outputs.artifactPath}}
+          path: ${{steps.artifact_file.outputs.artifactPath}}
 
-      - name: Get version information from addnode/pom.xml
-        id: addnode_version
-        run: |
-          version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode/pom.xml)
-          echo "addnode_version=${version}" >> $GITHUB_ENV
-      - name: Print addnode template version
-        run: echo $addnode_version
-      - name: Generate artifact name
-        run: echo "addnode_artifactName=arm-oraclelinux-wls-dynamic-cluster-addnode-$addnode_version-arm-assembly" >> $GITHUB_ENV
-      - name: Print addnode template artifact name
-        run: echo $addnode_artifactName
-      - name: Output addnode template artifact name
+      - name: Generate addnode artifact file name and path
         id: addnode_artifact_file
-        run: echo "##[set-output name=addnode_artifactName;]arm-oraclelinux-wls-dynamic-cluster-addnode-$addnode_version-arm-assembly"
-      - name: Generate zip package path
-        id: addnode_artifact_path
-        run: echo "##[set-output name=addnode_artifactPath;]arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName"
-      - name: Output addnode template artifact path
-        run: echo $addnode_artifactPath
-        env:
-          $addnode_artifactPath: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
-      - name: Unzip the package as upload action will zip again
-        run: unzip arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName.zip -d arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName
-
+        run: |
+          addnode_version=$(awk '/<version>[^<]+<\/version>/{gsub(/<version>|<\/version>/,"",$1);print $1;exit;}' arm-oraclelinux-wls-dynamic-cluster/addnode/pom.xml)
+          addnode_artifactName=arm-oraclelinux-wls-dynamic-cluster-addnode-$addnode_version-arm-assembly
+          unzip arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName.zip -d arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName
+          echo "##[set-output name=addnode_artifactName;]${addnode_artifactName}"
+          echo "##[set-output name=addnode_artifactPath;]arm-oraclelinux-wls-dynamic-cluster/addnode/target/$addnode_artifactName"
       - name: Archive arm-oraclelinux-wls-dynamic-cluster addnode template
         uses: actions/upload-artifact@v1
         if: success()
         with:
           name: ${{steps.addnode_artifact_file.outputs.addnode_artifactName}}
-          path: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
-
-      - name: Archive arm-oraclelinux-wls-dynamic-cluster addnode template
-        uses: actions/upload-artifact@v1
-        if: success()
-        with:
-          name: ${{steps.addnode_artifact_file.outputs.addnode_artifactName}}
-          path: ${{steps.addnode_artifact_path.outputs.addnode_artifactPath}}
+          path: ${{steps.addnode_artifact_file.outputs.addnode_artifactPath}}
 
       - name: Generate delete node artifact file name and path
         id: deletenode_artifact_file
@@ -303,37 +266,30 @@ jobs:
         id: prepare-deployed-parameters-and-test-script
         run: |
           imageUrn="${{ matrix.images }}"
-          sed -i "s/#location#/$location/g; \
-          s/#adminPasswordOrKey#/$wlsPassword/g; \
-          s/#wlsdomainname#/$wlsDomainName/g; \
-          s/#wlsusername#/$wlsUserName/g; \
-          s/#wlspassword#/$wlsPassword/g; \
-          s/#managedserverprefix#/$managedServerPrefix/g; \
-          s/#adminvmname#/$adminVMName/g; \
-          s/#skuUrnVersion#/$imageUrn/g; \
-          s/#testbranchName#/$testbranchName/g; \
-          s/#otnusername#/$otnUser/g; \
-          s/#otnpassword#/$otnPassword/g; \
-          s/#maxdyclustersize#/$maxDynamicClusterSize/g; \
-          s/#dyclustersize#/$dynamicClusterSize/g; \
-          s/#gitUserName#/$userName/g" \
-            arm-oraclelinux-wls-dynamic-cluster/test/data/parameters-test.json
           sed -i "s/#adminPasswordOrKey#/$wlsPassword/g" \
-          arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-path.sh   
-          sed -i "s/#adminVMName#/$adminVMName/g; \
-          s/#adminPasswordOrKey#/$wlsPassword/g; \
-          s/#managedServers#/$managedServers/g; \
-          s/#wlsUserName#/$wlsUserName/g; \
-          s/#wlspassword#/$wlsPassword/g" \
-          arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-access.sh
+          arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-path.sh
           sed -i "s/#adminVMName#/$adminVMName/g; \
           s/#adminPasswordOrKey#/$wlsPassword/g; \
           s/#managedServers#/$managedServers/g; \
           s/#wlsUserName#/$wlsUserName/g; \
           s/#wlspassword#/$wlsPassword/g" \
           arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-servers-lifecycle.sh
+
           echo "Generate deployment parameters..."
-          bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy.sh  arm-oraclelinux-wls-dynamic-cluster/test/data $location $wlsPassword $wlsDomainName $wlsUserName $wlsPassword $managedServerPrefix $maxDynamicClusterSize $dynamicClusterSize $adminVMName $imageUrn $testbranchName $userName
+          bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy.sh \
+            arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-test.json \
+            $location \
+            $wlsPassword \
+            $wlsDomainName \
+            $wlsUserName \
+            $wlsPassword \
+            $managedServerPrefix \
+            $maxDynamicClusterSize \
+            $dynamicClusterSize \
+            $adminVMName \
+            $imageUrn \
+            $testbranchName \
+            $userName
 
       - name: Accept Image Terms
         id: accept-terms
@@ -357,7 +313,7 @@ jobs:
               --verbose \
               --resource-group $resourceGroup \
               --name wls-dycluster-node \
-              --parameters @arm-oraclelinux-wls-dynamic-cluster/test/data/parameters-test.json \
+              --parameters @arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-test.json \
               --template-file arm-oraclelinux-wls-dynamic-cluster-$version-arm-assembly/mainTemplate.json
 
       - name: Verify Network Security Group
@@ -401,7 +357,7 @@ jobs:
               --nsg-name ${nsg} \
               --name NRMS-Rule-101 \
               --source-address-prefixes $sourceAddressPrefixes \
-              --destination-port-ranges 443 22
+              --destination-port-ranges 443 22 ${adminConsolePort}
 
       - name: Restart wls VM
         id: restart-wls-wm
@@ -452,11 +408,33 @@ jobs:
           timeout 6m sh -c 'until nc -zv $0 $1; do echo "nc rc: $?"; sleep 5; done' ${wlsPublicIP} 22
           sshpass -p ${wlsPassword} -v ssh -p 22 -o StrictHostKeyChecking=no -o ConnectTimeout=100 -v -tt weblogic@${wlsPublicIP} 'bash -s' < arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-path.sh
 
+      # Fix failure that caused by remote server closed.
+      - name: Restart remote SSH agent
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.azCliVersion }}
+          inlineScript: |
+            echo "Restart remote SSH agent"
+            az vm user reset-ssh \
+              --resource-group $resourceGroup \
+              --name ${{ env.adminVMName }}
+
       - name: Verify wls admin services
         id: veriy-admin-service
         run: |
           echo "Verifying WebLogic services at admin server"
           sshpass -p ${wlsPassword} -v ssh -p 22 -o StrictHostKeyChecking=no -o ConnectTimeout=100 -v -tt weblogic@${wlsPublicIP} 'bash -s' < arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-services.sh $wls_admin_services
+
+      # Fix failure that caused by remote server closed.
+      - name: Restart remote SSH agent
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.azCliVersion }}
+          inlineScript: |
+            echo "Restart remote SSH agent"
+            az vm user reset-ssh \
+              --resource-group $resourceGroup \
+              --name ${{ env.adminVMName }}
 
       - name: Verify wls managed server services
         id: veriy-msservice
@@ -468,7 +446,18 @@ jobs:
         id: verify-wls-access
         run: |
           echo "Verifying Weblogic Server Access"
-          sshpass -p ${wlsPassword} -v ssh -p 22 -o StrictHostKeyChecking=no -o ConnectTimeout=100 -v -tt weblogic@${wlsPublicIP} 'bash -s' < arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-access.sh
+          bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-access.sh "$wlsPublicIP" ${adminConsolePort} $wlsUserName $wlsPassword "$managedServers"
+
+      # Fix failure that caused by remote server closed.
+      - name: Restart remote SSH agent
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.azCliVersion }}
+          inlineScript: |
+            echo "Restart remote SSH agent"
+            az vm user reset-ssh \
+              --resource-group $resourceGroup \
+              --name ${{ env.adminVMName }}
 
       - name: Verify WebLogic Managed Server LifeCycle check
         id: verify-server-lifecycle
@@ -592,7 +581,7 @@ jobs:
             bash arm-oraclelinux-wls-dynamic-cluster/test/scripts/gen-parameters-deploy-addnode.sh \
             arm-oraclelinux-wls-dynamic-cluster/test/scripts/parameters-deploy-addnode.json \
               ${{ env.wlsPassword }} \
-              ${{ env.adminVMName }}:7001 \
+              ${{ env.adminVMName }}:${adminConsolePort} \
               weblogic \
               1 \
               "${{ matrix.images }}" \
@@ -606,7 +595,7 @@ jobs:
               ${{ env.managedServerPrefix }} \
               ${{ env.dynamicClusterSize }} \
               ${{ env.maxDynamicClusterSize }}
-            
+
             echo "deploy add-node template to create new nodes"
             az group deployment validate \
               -g ${resourceGroup} \
