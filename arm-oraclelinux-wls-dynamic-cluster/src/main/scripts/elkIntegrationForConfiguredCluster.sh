@@ -680,6 +680,41 @@ function create_temp_folder()
     sudo rm -rf $SCRIPT_PATH/*
 }
 
+function validate_elastic_server()
+{
+    timestamp=$(date +%s)
+    testIndex="azure-weblogic-validate-elastic-server-${timestamp}"
+    output=$(curl -XPUT --user ${elasticUserName}:${elasticPassword}  ${elasticURI}/${testIndex})
+    if [[ $? -eq 1 ||  -z `echo $output | grep "\"acknowledged\":true"` ]];then
+        echo $output
+        exit 1
+    fi
+
+    count=1
+    status404="\"status\":404"
+    while [[ -n ${status404} ]]; do
+        echo "."
+        count=$((count + 1))
+        # remove the test index
+        echo "Removing test index..."
+        curl -XDELETE --user ${elasticUserName}:${elasticPassword}  ${elasticURI}/${testIndex}
+        echo "Checking if test index is removed."
+        status404=$(curl -XGET --user ${elasticUserName}:${elasticPassword}  ${elasticURI}/${testIndex} | grep "\"status\":404")
+        echo ${status404}
+        if [[ -n ${status404} ]]; then
+            echo "Test index is removed..."
+            break
+        fi
+
+        if [ $count -le 30 ]; then
+            sleep 1m
+        else
+            echo "Error : Maximum attempts exceeded while removing test index from elastic server"
+            exit 1
+        fi
+    done
+}
+
 # main script starts from here
 
 export SCRIPT_PWD=$(pwd)
@@ -721,6 +756,7 @@ fi
 
 create_temp_folder
 validate_input
+validate_elastic_server
 
 echo "start to configure ELK"
 setup_javahome
