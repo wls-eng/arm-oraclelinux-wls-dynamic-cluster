@@ -290,9 +290,12 @@ function createNodeManagerService() {
     fi
     sudo chown -R $username:$groupname $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties*
     echo "Creating NodeManager service"
+    # Added waiting for network-online service and restart service
     cat <<EOF >/etc/systemd/system/wls_nodemanager.service
- [Unit]
+[Unit]
 Description=WebLogic nodemanager service
+After=network-online.target
+Wants=network-online.target
  
 [Service]
 Type=simple
@@ -305,6 +308,8 @@ User=oracle
 Group=oracle
 KillMode=process
 LimitNOFILE=65535
+Restart=always
+RestartSec=3
  
 [Install]
 WantedBy=multi-user.target
