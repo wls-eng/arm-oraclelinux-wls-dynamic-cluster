@@ -40,8 +40,9 @@
 
     <properties>
       <template.validation.tests.directory>${basedir}/../../arm-ttk/arm-ttk</template.validation.tests.directory>
-      <template.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/master/src/main/resources/pid.properties</template.pid.properties.url>
-      <template.microsoft.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/master/src/main/resources/microsoft-pid.properties</template.microsoft.pid.properties.url>
+      <test.parameters>-TestParameter '@{&quot;PasswordMinLength&quot;=6}'</test.parameters>
+      <template.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/20201202-hotfix/src/main/resources/pid.properties</template.pid.properties.url>
+      <template.microsoft.pid.properties.url>https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls/20201202-hotfix/src/main/resources/microsoft-pid.properties</template.microsoft.pid.properties.url>
     </properties>
     
     <description>

@@ -309,7 +309,7 @@
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_publicIPAddress')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_publicIPAddress')))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -325,7 +325,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[variables('name_virtualNetwork')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -365,7 +365,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),variables('name_nic')),concat(variables('const_managedVMPrefix'), copyIndex(),variables('name_nic')))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -395,7 +395,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "${azure.apiVersion}",
             "name": "[if(equals(copyIndex(),0),parameters('adminVMName'),concat(variables('const_managedVMPrefix'), copyIndex()))]",
             "location": "[parameters('location')]",
             "copy": {
