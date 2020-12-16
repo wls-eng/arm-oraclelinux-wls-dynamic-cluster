@@ -7,7 +7,7 @@
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
             },
-            "defaultValue": "${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/addnode-coherence/src/main/"
+            "defaultValue": "https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls-dynamic-cluster/master/addnode-coherence/src/main/"
         },
         "_artifactsLocationSasToken": {
             "type": "securestring",
@@ -220,8 +220,8 @@
     ],
     "resources": [
         {
-            "apiVersion": "${azure.apiVersion}",
-            "name": "${dynamic.addnode.coherence.start}",
+            "apiVersion": "2020-06-01",
+            "name": "pid-157ea410-12ae-11eb-adc1-0242ac120002",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -235,7 +235,7 @@
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "${azure.apiVersion}",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('name_vmMachine'),copyIndex(variables('const_cacheServerIndexOffset')),variables('name_publicIPAddress'))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -251,13 +251,13 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "${azure.apiVersion}",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('name_virtualNetwork'), '/', variables('name_subnet'))]",
             "condition": "[and(empty(variables('name_virtualNetwork')), empty(variables('name_subnet')))]"
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "${azure.apiVersion}",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('name_vmMachine'), copyIndex(variables('const_cacheServerIndexOffset')), variables('name_nic'))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -289,7 +289,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "${azure.apiVersion}",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('name_vmMachine'), copyIndex(variables('const_cacheServerIndexOffset')))]",
             "location": "[parameters('location')]",
             "copy": {
@@ -343,7 +343,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), '${azure.apiVersion2}').primaryEndpoints.blob]"
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), '2019-06-01').primaryEndpoints.blob]"
                     }
                 }
             },
@@ -356,7 +356,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('name_vmMachine'), copyIndex(variables('const_cacheServerIndexOffset')),'/newuserscript')]",
-            "apiVersion": "${azure.apiVersion}",
+            "apiVersion": "2020-06-01",
             "location": "[parameters('location')]",
             "copy": {
                 "name": "virtualMachineExtensionLoop",
@@ -382,8 +382,8 @@
             }
         },
         {
-            "apiVersion": "${azure.apiVersion}",
-            "name": "${dynamic.addnode.coherence.end}",
+            "apiVersion": "2020-06-01",
+            "name": "pid-157ea1ea-12ae-11eb-adc1-0242ac120002",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
                 "virtualMachineExtensionLoop"

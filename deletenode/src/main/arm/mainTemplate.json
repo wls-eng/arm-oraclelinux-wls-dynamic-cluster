@@ -7,7 +7,7 @@
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
             },
-            "defaultValue": "${artifactsLocationBase}/arm-oraclelinux-wls-dynamic-cluster/${git.tag}/deletenode/src/main/"
+            "defaultValue": "https://raw.githubusercontent.com/wls-eng/arm-oraclelinux-wls-dynamic-cluster/master/deletenode/src/main/"
         },
         "_artifactsLocationSasToken": {
             "type": "securestring",
@@ -102,8 +102,8 @@
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "${azure.apiVersion}",
-            "name": "${dynamic.deletenode.start}",
+            "apiVersion": "2020-06-01",
+            "name": "pid-931c2901-224a-5cc6-b235-41fa162b7532",
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -116,7 +116,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "${azure.apiVersion}",
+            "apiVersion": "2020-06-01",
             "name": "[concat(parameters('adminVMName'),'/newuserscript')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -136,8 +136,8 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "${azure.apiVersion}",
-            "name": "${dynamic.deletenode.end}",
+            "apiVersion": "2020-06-01",
+            "name": "pid-3eb27f94-d1c3-572c-a7da-0d7f26f6a20e",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'), 'newuserscript')]"
             ],
