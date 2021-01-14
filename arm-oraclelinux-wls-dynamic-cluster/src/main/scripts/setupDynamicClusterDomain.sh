@@ -518,7 +518,7 @@ function updateNetworkRules()
         maxManagedIndex=1
         echo "update network rules for managed server"
         # Port is dynamic betweent 8002 to 8001+dynamicClusterSize, open port from 8002 to 8001+dynamicClusterSize for managed machines.
-        while [ $maxManagedIndex -le $dynamicClusterSize ]
+        while [ $maxManagedIndex -le $maxDynamicClusterSize ]
         do
           managedPort=$(($wlsManagedPort + $maxManagedIndex))
           sudo firewall-cmd --zone=public --add-port=$managedPort/tcp

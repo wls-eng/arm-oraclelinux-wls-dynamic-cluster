@@ -585,6 +585,14 @@
         "storageAccountName": {
             "type": "string",
             "value": "[variables('name_storageAccount')]"
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "value": "[variables('name_virtualNetwork')]"
+        },
+        "adminRestMgmtURL":{
+            "type": "string",
+            "value": "[concat('http://',parameters('adminVMName'),':7001/management/weblogic/latest')]"
         }
     }
 }
