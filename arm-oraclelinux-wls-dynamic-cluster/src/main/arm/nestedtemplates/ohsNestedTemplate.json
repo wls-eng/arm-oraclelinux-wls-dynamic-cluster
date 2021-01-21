@@ -22,10 +22,16 @@
                 "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
             }
         },
-        "ohsVMName": {
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminRestMgmtURL": {
             "type": "string",
             "metadata": {
-                "description": "User name for the Virtual Machine."
+                "description": "Provide admin REST management URL"
             }
         },
         "adminUsername": {
@@ -45,10 +51,67 @@
                 "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
             }
         },
-        "adminPasswordOrKey": {
+        "dnsLabelPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+            }
+        },
+        "guidValue": {
+            "type": "string",
+            "defaultValue": "[newGuid()]"
+        },
+        "keyType": {
+            "type": "string",
+            "defaultValue": "PKCS12",
+            "allowedValues": [
+                "JKS",
+                "PKCS12"
+            ],
+            "metadata": {
+                "description": "Provide Key type is JKS or PKCS12 signed certificates"
+            }
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "ohsComponentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS component name"
+            }
+        },
+        "ohsDomainName": {
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS domain name"
+            }
+        },
+        "ohsNMPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+                "description": "Password for OHS NodeManager"
+            }
+        },
+        "ohsNMUser": {
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS NodeManager user name"
+            }
+        },
+        "ohsSSLKeystoreData": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data"
+            }
+        },
+        "ohsSSLKeystorePassword": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate"
             }
         },
         "ohsSkuUrnVersion": {
@@ -63,32 +126,10 @@
                 "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
             }
         },
-        "guidValue": {
-            "type": "string",
-            "defaultValue": "[newGuid()]"
-        },
-        "ohsDomainName": {
+        "ohsVMName": {
             "type": "string",
             "metadata": {
-                "description": "Provide OHS domain name"
-            }
-        },
-        "ohsComponentName": {
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS component name"
-            }
-        },
-        "ohsNMUser": {
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS NodeManager user name"
-            }
-        },
-        "ohsNMPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for OHS NodeManager"
+                "description": "User name for the Virtual Machine."
             }
         },
         "ohshttpPort": {
@@ -103,22 +144,16 @@
                 "description": "Provide OHS HTTPS port"
             }
         },
-        "dnsLabelPrefix": {
+        "oracleVaultPswd": {
             "type": "string",
             "metadata": {
-                "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+				"description": "Password for Oracle Vault required for OHS SSL setup"
             }
         },
         "storageAccountName": {
             "type": "string",
             "metadata": {
                 "description": "Name of storage account. One storage account can store 20 vitual machines with 2 VHDs of 500 IOPS."
-            }
-        },
-        "location": {
-            "type": "string",
-            "metadata": {
-                "description": "Location for all resources."
             }
         },
         "virtualNetworkName": {
@@ -134,12 +169,6 @@
                 "description": "Select appropriate VM Size as per requirement"
             }
         },
-        "adminRestMgmtURL": {
-            "type": "string",
-            "metadata": {
-                "description": "Provide admin REST management URL"
-            }
-        },
         "wlsPassword": {
             "type": "string",
             "metadata": {
@@ -151,50 +180,11 @@
             "metadata": {
                 "description": "Provide WebLogic username"
             }
-        },
-        "keyType": {
-            "type": "string",
-            "defaultValue": "PKCS12",
-            "allowedValues": [
-                "JKS",
-                "PKCS12"
-            ],
-            "metadata": {
-                "description": "Provide Key type is JKS or PKCS12 signed certificates"
-            }
-        },
-        "ohsSSLKeystoreData": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data"
-            }
-        },
-        "ohsSSLKeystorePassword": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate"
-            }
-        },
-        "oracleVaultPswd": {
-            "type": "string",
-            "metadata": {
-				"description": "Password for Oracle Vault required for OHS SSL setup"
-            }
         }
     },
     "variables": {
-        "const_imagePublisher": "oracle",
-        "name_ohsSkuUrnVersion": "[split(parameters('ohsSkuUrnVersion'), ';')]",
         "const_imageOffer": "[variables('name_ohsSkuUrnVersion')[0]]",
-        "name_linuxImageOfferSKU": "[variables('name_ohsSkuUrnVersion')[1]]",
-        "name_linuxImageVersion": "[variables('name_ohsSkuUrnVersion')[2]]",
-        "name_nic": "_NIC",
-        "name_subnet": "Subnet",
-        "name_publicIPAddress": "_PublicIP",
-        "const_publicIPAddressType": "Dynamic",
-        "const_vmSize": "[parameters('vmSizeSelect')]",
-        "name_scriptFile": "setupOHS.sh",
-        "name_networkSecurityGroup": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
+        "const_imagePublisher": "oracle",
         "const_linuxConfiguration": {
             "disablePasswordAuthentication": true,
             "ssh": {
@@ -206,7 +196,17 @@
                 ]
             }
         },
+        "const_publicIPAddressType": "Dynamic",
+        "const_vmSize": "[parameters('vmSizeSelect')]",
+        "name_linuxImageOfferSKU": "[variables('name_ohsSkuUrnVersion')[1]]",
+        "name_linuxImageVersion": "[variables('name_ohsSkuUrnVersion')[2]]",
+        "name_networkSecurityGroup": "[concat(parameters('dnsLabelPrefix'), '-nsg')]",
+        "name_nic": "_NIC",
+        "name_ohsSkuUrnVersion": "[split(parameters('ohsSkuUrnVersion'), ';')]",
         "name_outputOHSHost": "[concat(parameters('ohsVMName'),variables('name_publicIPAddress'))]",
+        "name_publicIPAddress": "_PublicIP",
+        "name_scriptFile": "setupOHS.sh",
+        "name_subnet": "Subnet",
         "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), variables('name_subnet'))]"
     },
     "resources": [
