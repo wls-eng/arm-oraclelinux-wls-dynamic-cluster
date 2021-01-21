@@ -54,6 +54,17 @@
                 "description": "Admin Server hosting VM name."
             }
         },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "password",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
         "databaseType": {
             "defaultValue": "",
             "type": "string",
@@ -466,6 +477,9 @@
                     "adminVMName": {
                         "value": "[parameters('adminVMName')]"
                     },
+                    "authenticationType": {
+                        "value": "[parameters('authenticationType')]"
+                    },
                     "dnsLabelPrefix": {
                         "value": "[parameters('dnsLabelPrefix')]"
                     },
@@ -718,6 +732,9 @@
                     "adminUsername": {
                         "value": "[parameters('adminUsername')]"
                     },
+                    "authenticationType": {
+                        "value": "[parameters('authenticationType')]"
+                    },
                     "adminVMName": {
                         "value": "[parameters('adminVMName')]"
                     },
@@ -804,6 +821,9 @@
                     },
                     "adminPasswordOrKey": {
                         "value": "[parameters('adminPasswordOrKey')]"                    
+                    },
+                    "authenticationType": {
+                        "value": "[parameters('authenticationType')]"
                     },
                     "dnsLabelPrefix": {
                         "value": "[parameters('dnsLabelPrefix')]"
