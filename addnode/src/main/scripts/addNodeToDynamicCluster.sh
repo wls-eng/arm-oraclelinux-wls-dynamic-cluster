@@ -9,7 +9,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./addnode.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <serverIndex> <wlsAdminURL> <oracleHome> <wlsDomainPath> <dynamicClusterSize> <vmNamePrefix> <storageAccountName> <storageAccountKey> <mountpointPath> <wlsADSSLCer> <wlsLDAPPublicIP> <adServerHost> <vituralMachinePassword> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <maxDynamicClusterSize>"
+  echo_stderr "./addnode.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <serverIndex> <wlsAdminURL> <oracleHome> <wlsDomainPath> <dynamicClusterSize> <vmNamePrefix> <storageAccountName> <storageAccountKey> <mountpointPath> <wlsADSSLCer> <wlsLDAPPublicIP> <adServerHost> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <maxDynamicClusterSize>"
 }
 
 function installUtilities()
@@ -99,10 +99,6 @@ function validateInput()
 
     if [[ "$wlsADSSLCer" != "null" && "$wlsLDAPPublicIP" != "null" && "$adServerHost" != "null" ]]; then
         enableAAD="true"
-    fi
-
-    if [ -z "$vituralMachinePassword" ]; then
-        echo_stderr "mountpointPath is required. "
     fi
 
     if [ -z "$enableELK" ]; then
@@ -440,9 +436,7 @@ function getSerializedSystemIniFileFromShare()
 function mapLDAPHostWithPublicIP()
 {
     echo "map LDAP host with pubilc IP"
-    # change to superuser
-    echo "${vituralMachinePassword}"
-    sudo -S su -
+    
     # remove existing ip address for the same host
     sudo sed -i '/${adServerHost}/d' /etc/hosts
     sudo echo "${wlsLDAPPublicIP}  ${adServerHost}" >> /etc/hosts
@@ -507,7 +501,7 @@ for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 24 ]
+if [ $# -ne 23 ]
 then
     usage
     exit 1
@@ -529,14 +523,13 @@ export mountpointPath=${13}
 export wlsADSSLCer="${14}"
 export wlsLDAPPublicIP="${15}"
 export adServerHost="${16}"
-export vituralMachinePassword="${17}"
-export enableELK=${18}
-export elasticURI=${19}
-export elasticUserName=${20}
-export elasticPassword=${21}
-export logsToIntegrate=${22}
-export logIndex=${23}
-export maxDynamicClusterSize=${24}
+export enableELK=${17}
+export elasticURI=${18}
+export elasticUserName=${19}
+export elasticPassword=${20}
+export logsToIntegrate=${21}
+export logIndex=${22}
+export maxDynamicClusterSize=${23}
 
 export enableAAD="false"
 
