@@ -152,11 +152,57 @@
                 "description": "If true, use the supplied parameters to distribute WebLogic Server logs to the Elasticsearch instance."
             }
         },
-        "jdbcDataSourceName": {
+         "enableOHS": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "Bool value, if it's set to true, it will setup OHS and configures for WebLogic Server cluster"            
+            }        
+        },
+       "jdbcDataSourceName": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
                 "description": "JNDI Name for JDBC Datasource"
+            }
+        },
+        "keyType": {
+            "type": "string",
+            "defaultValue": "PKCS12",
+            "allowedValues": [
+              "JKS",
+              "PKCS12"            
+            ],
+            "metadata": {
+                "description": "Provide Key type is JKS or PKCS12 signed certificates for OHS. Default is PKCS12 format"            
+            }
+        },
+        "keyVaultName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "KeyVault Name where certificates are stored for OHS" 
+            }
+        },
+        "keyVaultResourceGroup": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Resource group name in current subscription containing the KeyVault for OHS" 
+            }
+        },
+        "keyVaultSSLCertDataSecretName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data for OHS" 
+            }
+        },
+        "keyVaultSSLCertPasswordSecretName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate for OHS" 
             }
         },
         "location": {
@@ -197,6 +243,74 @@
                 "description": "Number of Coherence cache instances, used to create virtual machines and Managed Server."
             }
         },
+        "ohsComponentName": {
+            "defaultValue": "ohs_azure",
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS component name"          
+            }
+        },
+        "ohsDomainName": {
+            "defaultValue": "ohsStandaloneDomain",
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS domain name"            
+            }
+        },
+        "ohsNMPassword": {
+            "defaultValue": "",
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for OHS NodeManager"      
+            }
+        },
+        "ohsNMUser": {
+            "defaultValue": "weblogic",
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS NodeManager user name"       
+            }
+        },
+        "ohsSkuUrnVersion": {
+            "type": "string",
+            "defaultValue": "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest",
+            "allowedValues": [
+              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest",
+              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol74;latest",
+              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol73;latest"
+             ],                    
+            "metadata": {
+                "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"            
+            }
+        },
+        "ohsVMName": {
+            "defaultValue": "ohsVM",
+            "type": "string",
+            "metadata": {
+                "description": "OHS Server hosting VM name."
+            }
+        },
+        "ohshttpPort": {
+            "defaultValue": "7777",
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS HTTP port"  
+            }
+        },
+        "ohshttpsPort": {
+            "defaultValue": "4444",
+            "type": "string",
+            "metadata": {
+                "description": "Provide OHS HTTPS port"  
+            }
+        },
+        "oracleVaultPswd": {
+            "defaultValue": "",
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for Oracle Vault required for OHS"      
+            }
+        },      
         "portsToExpose": {
             "defaultValue": "80,443,7001-9000",
             "type": "string",
@@ -300,121 +414,7 @@
             "metadata": {
                 "description": "Username for your Weblogic domain name"
             }
-        },
-        "enableOHS": {
-            "defaultValue": false,
-            "type": "bool",
-            "metadata": {
-                "description": "Bool value, if it's set to true, it will setup OHS and configures for WebLogic Server cluster"            
-            }        
-        },
-        "ohsSkuUrnVersion": {
-            "type": "string",
-            "defaultValue": "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest",
-            "allowedValues": [
-              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest",
-              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol74;latest",
-              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol73;latest"
-             ],                    
-            "metadata": {
-                "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"            
-            }
-        },
-        "ohsVMName": {
-            "defaultValue": "ohsVM",
-            "type": "string",
-            "metadata": {
-                "description": "OHS Server hosting VM name."
-            }
-        },
-        "ohsDomainName": {
-            "defaultValue": "ohsStandaloneDomain",
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS domain name"            
-            }
-        },
-        "ohsComponentName": {
-            "defaultValue": "ohs_azure",
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS component name"          
-            }
-        },
-        "ohsNMUser": {
-            "defaultValue": "weblogic",
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS NodeManager user name"       
-            }
-        },
-        "ohsNMPassword": {
-            "defaultValue": "",
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for OHS NodeManager"      
-            }
-        },
-        "ohshttpPort": {
-            "defaultValue": "7777",
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS HTTP port"  
-            }
-        },
-        "ohshttpsPort": {
-            "defaultValue": "4444",
-            "type": "string",
-            "metadata": {
-                "description": "Provide OHS HTTPS port"  
-            }
-        },
-        "keyType":{
-            "type": "string",
-            "defaultValue": "PKCS12",
-            "allowedValues": [
-              "JKS",
-              "PKCS12"            
-            ],
-            "metadata": {
-                "description": "Provide Key type is JKS or PKCS12 signed certificates for OHS. Default is PKCS12 format"            
-            }
-        },
-        "keyVaultName": {
-            "defaultValue": "",
-            "type": "string",
-            "metadata": {
-                "description": "KeyVault Name where certificates are stored for OHS" 
-            }
-        },
-        "keyVaultResourceGroup": {
-            "defaultValue": "",
-            "type": "string",
-            "metadata": {
-                "description": "Resource group name in current subscription containing the KeyVault for OHS" 
-            }
-        },
-        "keyVaultSSLCertDataSecretName": {
-            "defaultValue": "",
-            "type": "string",
-            "metadata": {
-                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data for OHS" 
-            }
-        },
-        "keyVaultSSLCertPasswordSecretName": {
-            "defaultValue": "",
-            "type": "string",
-            "metadata": {
-                "description": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate for OHS" 
-            }
-        },
-        "oracleVaultPswd": {
-            "defaultValue": "",
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for Oracle Vault required for OHS"      
-            }
-        }      
+        }
     },
     "variables": {
         "const_currentSubscription": "[subscription().subscriptionId]",
@@ -805,30 +805,6 @@
                     "adminPasswordOrKey": {
                         "value": "[parameters('adminPasswordOrKey')]"                    
                     },
-                    "ohsSkuUrnVersion": {
-                        "value": "[parameters('ohsSkuUrnVersion')]"                    
-                    },
-                    "ohsVMName": {
-                        "value": "[parameters('ohsVMName')]"                    
-                    },
-                    "ohsDomainName": {
-                        "value": "[parameters('ohsDomainName')]"                    
-                    },
-                    "ohsComponentName": {
-                        "value": "[parameters('ohsComponentName')]"                    
-                    },
-                    "ohsNMUser": {
-                        "value": "[parameters('ohsNMUser')]"                    
-                    },
-                    "ohsNMPassword": {
-                        "value": "[parameters('ohsNMPassword')]"                    
-                    },
-                    "ohshttpPort": {
-                        "value": "[parameters('ohshttpPort')]"                    
-                    },
-                    "ohshttpsPort": {
-                        "value": "[parameters('ohshttpsPort')]"                    
-                    },
                     "dnsLabelPrefix": {
                         "value": "[parameters('dnsLabelPrefix')]"
                     },
@@ -838,23 +814,29 @@
                     "location": {
                         "value": "[parameters('location')]"
                     },
-                    "virtualNetworkName": {
-                        "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.virtualNetworkName.value]"					
+                    "ohsComponentName": {
+                        "value": "[parameters('ohsComponentName')]"                    
                     },
-                    "oracleVaultPswd": {
-                        "value": "[parameters('oracleVaultPswd')]"					
+                    "ohsDomainName": {
+                        "value": "[parameters('ohsDomainName')]"                    
                     },
-                    "adminRestMgmtURL": {
-                        "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.adminRestMgmtURL.value]"					
+                    "ohsNMPassword": {
+                        "value": "[parameters('ohsNMPassword')]"                    
                     },
-                    "wlsPassword": {
-                        "value": "[parameters('wlsPassword')]"					
+                    "ohsNMUser": {
+                        "value": "[parameters('ohsNMUser')]"                    
                     },
-                    "wlsUserName": {
-                        "value": "[parameters('wlsUserName')]"					
+                    "ohsSkuUrnVersion": {
+                        "value": "[parameters('ohsSkuUrnVersion')]"                    
                     },
-                    "keyType": {
-                        "value": "[parameters('keyType')]"					
+                    "ohsVMName": {
+                        "value": "[parameters('ohsVMName')]"                    
+                    },
+                    "ohshttpPort": {
+                        "value": "[parameters('ohshttpPort')]"                    
+                    },
+                    "ohshttpsPort": {
+                        "value": "[parameters('ohshttpsPort')]"                    
                     },
                     "ohsSSLKeystoreData": {
                         "reference": {
@@ -871,9 +853,27 @@
                             },
                             "secretName": "[parameters('keyVaultSSLCertPasswordSecretName')]"
                         }					
+                    },
+                    "oracleVaultPswd": {
+                        "value": "[parameters('oracleVaultPswd')]"					
+                    },
+                    "virtualNetworkName": {
+                        "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.virtualNetworkName.value]"					
+                    },
+                    "adminRestMgmtURL": {
+                        "value": "[reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.adminRestMgmtURL.value]"					
+                    },
+                    "wlsPassword": {
+                        "value": "[parameters('wlsPassword')]"					
+                    },
+                    "wlsUserName": {
+                        "value": "[parameters('wlsUserName')]"					
+                    },
+                    "keyType": {
+                        "value": "[parameters('keyType')]"					
                     }
                 }
-            }		                        					
+            }
         },
         {
             "type": "Microsoft.Resources/deployments",
