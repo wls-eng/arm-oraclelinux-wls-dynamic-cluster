@@ -936,6 +936,14 @@
         "logIndex": {
             "type": "string",
             "value": "[if(parameters('enableELK'), reference('elkLinkedTemplate', '${azure.apiVersion}').outputs.logIndex.value, '')]"
+        },
+        "ohsAccessURL":{
+            "type": "string",
+            "value": "[if(parameters('enableOHS'), reference('ohsLinkedTemplate', '${azure.apiVersion}').outputs.ohsAccessURL.value, '')]"
+        },
+        "ohsSecureAccessURL":{
+            "type": "string",
+            "value": "[if(parameters('enableOHS'), reference('ohsLinkedTemplate', '${azure.apiVersion}').outputs.ohsSecureAccessURL.value, '')]"
         }
     }
 }
