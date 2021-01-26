@@ -406,6 +406,8 @@ jobs:
           echo "pubilc IP of wls machine: ${wlsPublicIP}"
           echo "Verifying Weblgic server installation"
           timeout 6m sh -c 'until nc -zv $0 $1; do echo "nc rc: $?"; sleep 5; done' ${wlsPublicIP} 22
+          echo install sshpass
+          sudo apt-get install -y sshpass
           sshpass -p ${wlsPassword} -v ssh -p 22 -o StrictHostKeyChecking=no -o ConnectTimeout=100 -v -tt weblogic@${wlsPublicIP} 'bash -s' < arm-oraclelinux-wls-dynamic-cluster/test/scripts/verify-wls-path.sh
 
       # Fix failure that caused by remote server closed.
