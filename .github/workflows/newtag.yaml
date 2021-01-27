@@ -14,7 +14,7 @@ env:
   tagbranch: "tagbranch"
   gitToken: ${{ secrets.GIT_TOKEN }}
   refArmttk: 8e08a92dbb0a22b8560ec854a60e9a8a7b71c68f
-  refJavaee: a7b624e586c4a889a69542f51a2c1755f5d8299d
+  refJavaee: 0f04aab7fc41be640bd22191d7a16054863cfe91
   repoName: "arm-oraclelinux-wls-dynamic-cluster"
   userEmail: ${{ secrets.USER_EMAIL }}
   userName: ${{ secrets.USER_NAME }}

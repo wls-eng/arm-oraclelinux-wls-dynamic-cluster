@@ -104,6 +104,43 @@
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             }
         },
+        "dnszoneIdentity": {
+            "type": "Object",
+            "defaultValue": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/subscriptionId/resourceGroups/TestResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/TestUserIdentity1": {}
+                }
+            }
+        },
+        "dnszoneName": {
+            "defaultValue": "contoso.xyz",
+            "type": "string",
+            "metadata": {
+                "description": "Azure DNS Zone name."
+            }
+        },
+        "dnszoneResourceGroup": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Name of the resource group containing the Azure DNS Zone."
+            }
+        },
+        "dnszoneAdminConsoleLabel": {
+            "type": "string",
+            "defaultValue": "console",
+            "metadata": {
+                "description": "Specify a label used to generate subdomain of Oracle WebLogic Administration Console. The final subdomain name will be label.dnszoneName, e.g. console.contoso.xyz"
+            }
+        },
+        "dnszoneLoadBalancerLabel": {
+            "type": "string",
+            "defaultValue": "applications",
+            "metadata": {
+                "description": "Specify a label used to generate subdomain of Application Gateway. The final subdomain name will be label.dnszoneName, e.g. applications.contoso.xyz"
+            }
+        },
         "dsConnectionURL": {
             "defaultValue": "",
             "type": "string",
@@ -153,6 +190,13 @@
                 "description": "If true, create Coherence cluster with data tier for cache."
             }
         },
+        "enableCustomDNS": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "If true, use the supplied parameters to configure custome DNS."
+            }
+        },
         "enableCoherenceWebLocalStorage": {
             "defaultValue": true,
             "type": "bool",
@@ -174,14 +218,21 @@
                 "description": "If true, use the supplied parameters to distribute WebLogic Server logs to the Elasticsearch instance."
             }
         },
-         "enableOHS": {
+        "enableOHS": {
             "defaultValue": false,
             "type": "bool",
             "metadata": {
-                "description": "Bool value, if it's set to true, it will setup OHS and configures for WebLogic Server cluster"            
-            }        
+                "description": "Bool value, if it's set to true, it will setup OHS and configures for WebLogic Server cluster"
+            }
         },
-       "jdbcDataSourceName": {
+        "hasDNSZones": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "If true, the template will update records to the existing DNS Zone. If false, the template will create a new DNS Zone."
+            }
+        },
+        "jdbcDataSourceName": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
@@ -192,39 +243,39 @@
             "type": "string",
             "defaultValue": "PKCS12",
             "allowedValues": [
-              "JKS",
-              "PKCS12"            
+                "JKS",
+                "PKCS12"
             ],
             "metadata": {
-                "description": "Provide Key type is JKS or PKCS12 signed certificates for OHS. Default is PKCS12 format"            
+                "description": "Provide Key type is JKS or PKCS12 signed certificates for OHS. Default is PKCS12 format"
             }
         },
         "keyVaultName": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
-                "description": "KeyVault Name where certificates are stored for OHS" 
+                "description": "KeyVault Name where certificates are stored for OHS"
             }
         },
         "keyVaultResourceGroup": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
-                "description": "Resource group name in current subscription containing the KeyVault for OHS" 
+                "description": "Resource group name in current subscription containing the KeyVault for OHS"
             }
         },
         "keyVaultSSLCertDataSecretName": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
-                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data for OHS" 
+                "description": "The name of the secret in the specified KeyVault whose value is the SSL Certificate Data for OHS"
             }
         },
         "keyVaultSSLCertPasswordSecretName": {
             "defaultValue": "",
             "type": "string",
             "metadata": {
-                "description": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate for OHS" 
+                "description": "The name of the secret in the specified KeyVault whose value is the password for the SSL Certificate for OHS"
             }
         },
         "location": {
@@ -237,7 +288,7 @@
         "logsToIntegrate": {
             "type": "array",
             "defaultValue": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput", "NodeManagerLog" ],
-            "allowedValues": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput","NodeManagerLog" ],
+            "allowedValues": [ "HTTPAccessLog", "ServerLog", "DomainLog", "DataSourceLog", "StandardErrorAndOutput", "NodeManagerLog" ],
             "metadata": {
                 "description": "Specify the expeted logs to integrate, you must input at least one log."
             }
@@ -256,7 +307,7 @@
                 "description": "Maximum Number of Managed Servers allowed to be configured in the Dynamic Cluster"
             }
         },
-         "numberOfCoherenceCacheInstances": {
+        "numberOfCoherenceCacheInstances": {
             "defaultValue": 1,
             "type": "int",
             "minValue": 1,
@@ -269,28 +320,28 @@
             "defaultValue": "ohs_azure",
             "type": "string",
             "metadata": {
-                "description": "Provide OHS component name"          
+                "description": "Provide OHS component name"
             }
         },
         "ohsDomainName": {
             "defaultValue": "ohsStandaloneDomain",
             "type": "string",
             "metadata": {
-                "description": "Provide OHS domain name"            
+                "description": "Provide OHS domain name"
             }
         },
         "ohsNMPassword": {
             "defaultValue": "",
             "type": "securestring",
             "metadata": {
-                "description": "Password for OHS NodeManager"      
+                "description": "Password for OHS NodeManager"
             }
         },
         "ohsNMUser": {
             "defaultValue": "weblogic",
             "type": "string",
             "metadata": {
-                "description": "Provide OHS NodeManager user name"       
+                "description": "Provide OHS NodeManager user name"
             }
         },
         "ohsSkuUrnVersion": {
@@ -302,7 +353,7 @@
               "ohs-122140-jdk8-ol73;ohs-122140-jdk8-ol73;latest"
              ],                    
             "metadata": {
-                "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"            
+                "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
             }
         },
         "ohsVMName": {
@@ -316,23 +367,23 @@
             "defaultValue": "7777",
             "type": "string",
             "metadata": {
-                "description": "Provide OHS HTTP port"  
+                "description": "Provide OHS HTTP port"
             }
         },
         "ohshttpsPort": {
             "defaultValue": "4444",
             "type": "string",
             "metadata": {
-                "description": "Provide OHS HTTPS port"  
+                "description": "Provide OHS HTTPS port"
             }
         },
         "oracleVaultPswd": {
             "defaultValue": "",
             "type": "securestring",
             "metadata": {
-                "description": "Password for Oracle Vault required for OHS"      
+                "description": "Password for Oracle Vault required for OHS"
             }
-        },      
+        },
         "portsToExpose": {
             "defaultValue": "80,443,7001-9000",
             "type": "string",
@@ -341,18 +392,18 @@
             }
         },
         "skuUrnVersion": {
-           "type": "string",
-           "defaultValue": "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest",
-           "allowedValues": [
-              "owls-122130-jdk8-ol73;Oracle:weblogic-122130-jdk8-ol73:owls-122130-jdk8-ol7;latest",
-              "owls-122130-jdk8-ol74;Oracle:weblogic-122130-jdk8-ol74:owls-122130-jdk8-ol7;latest",
-              "owls-122140-jdk8-ol76;Oracle:weblogic-122140-jdk8-ol76:owls-122140-jdk8-ol7;latest",
-              "owls-141100-jdk8-ol76;Oracle:weblogic-141100-jdk8-ol76:owls-141100-jdk8-ol7;latest",
-              "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest"
-           ],
-           "metadata": {
-              "description": "The Oracle Linux image with Weblogic and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
-           }
+            "type": "string",
+            "defaultValue": "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest",
+            "allowedValues": [
+                "owls-122130-jdk8-ol73;Oracle:weblogic-122130-jdk8-ol73:owls-122130-jdk8-ol7;latest",
+                "owls-122130-jdk8-ol74;Oracle:weblogic-122130-jdk8-ol74:owls-122130-jdk8-ol7;latest",
+                "owls-122140-jdk8-ol76;Oracle:weblogic-122140-jdk8-ol76:owls-122140-jdk8-ol7;latest",
+                "owls-141100-jdk8-ol76;Oracle:weblogic-141100-jdk8-ol76:owls-141100-jdk8-ol7;latest",
+                "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest"
+            ],
+            "metadata": {
+                "description": "The Oracle Linux image with Weblogic and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
+            }
         },
         "usePreviewImage": {
             "type": "bool",
@@ -535,6 +586,7 @@
         "name_clusterLinkedTemplateName": "clusterTemplate.json",
 		"name_clusterCustomSSLLinkedTemplateName": "clusterCustomSSLTemplate.json",
         "name_dbLinkedTemplateName": "dbTemplate.json",
+        "name_dnszonesLinkedTemplateName": "dnszonesTemplate.json",
         "name_elkLinkedTemplateName": "elkNestedTemplate.json",
         "name_coherenceTemplateName": "coherenceTemplate.json",
         "name_ohsLinkedTemplateName": "ohsNestedTemplate.json",
@@ -1262,6 +1314,52 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "${azure.apiVersion}",
+            "name": "dnszonesLinkedTemplate",
+            "condition": "[parameters('enableCustomDNS')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'ohsLinkedTemplate')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/', variables('name_dnszonesLinkedTemplateName')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    },
+                    "dnszonesARecordSetNames": {
+                        "value": "[if(parameters('enableOHS'), createArray(parameters('dnszoneAdminConsoleLabel'),parameters('dnszoneLoadBalancerLabel')), createArray(parameters('dnszoneAdminConsoleLabel')))]"
+                    },
+                    "dnszoneName": {
+                        "value": "[parameters('dnszoneName')]"
+                    },
+                    "hasDNSZones": {
+                        "value": "[parameters('hasDNSZones')]"
+                    },
+                    "identity": {
+                        "value": "[parameters('dnszoneIdentity')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "resourceGroup": {
+                        "value": "[parameters('dnszoneResourceGroup')]"
+                    },
+                    "targetResources": {
+                        "value": "[if(parameters('enableOHS'), createArray(reference('clusterLinkedTemplate', '${azure.apiVersion}').outputs._adminPublicIPId.value, reference('ohsLinkedTemplate', '${azure.apiVersion}').outputs._ohsPublicIP.value), createArray(reference('clusterLinkedTemplate', '${azure.apiVersion}').outputs._adminPublicIPId.value))]"
+                    }
+                }
+
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "${azure.apiVersion}",
             "name": "${dynamic.end}",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', variables('clusterTemplateRef'))]",
@@ -1270,6 +1368,7 @@
                 "[resourceId('Microsoft.Resources/deployments', 'elkLinkedTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'coherenceTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'ohsLinkedTemplate')]",
+                "[resourceId('Microsoft.Resources/deployments', 'dnszonesLinkedTemplate')]",
                 "[resourceId('Microsoft.Resources/deployments', 'networkSecurityLinkedTemplate')]"
             ],
             "properties": {
@@ -1295,11 +1394,11 @@
         },
         "adminConsole": {
             "type": "string",
-            "value": "[reference(variables('clusterTemplateRef'),'${azure.apiVersion}').outputs.adminConsole.value]"
+            "value": "[if(parameters('enableCustomDNS'), format('http://{0}.{1}:7001/console',parameters('dnszoneAdminConsoleLabel'),parameters('dnszoneName')),reference('clusterLinkedTemplate','${azure.apiVersion}').outputs.adminConsole.value)]"
         },
         "adminSecuredConsole": {
             "type": "string",
-            "value": "[reference(variables('clusterTemplateRef'),'${azure.apiVersion}').outputs.adminSecuredConsole.value]"
+            "value": "[if(parameters('enableCustomDNS'), format('https://{0}.{1}:7002/console',parameters('dnszoneAdminConsoleLabel'),parameters('dnszoneName')),reference(variables('clusterTemplateRef'),'${azure.apiVersion}').outputs.adminSecuredConsole.value)]"
         },
         "logIndex": {
             "type": "string",

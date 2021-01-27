@@ -358,6 +358,10 @@
         }
     ],
     "outputs": {
+        "_ohsPublicIP": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/publicIPAddresses',concat(parameters('ohsVMName'),variables('name_publicIPAddress')))]"
+        },
         "ohsHostName": {
             "type": "string",
             "value": "[reference(variables('name_outputOHSHost'), '${azure.apiVersion}').dnsSettings.fqdn]"
