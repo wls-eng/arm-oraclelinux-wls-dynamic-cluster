@@ -333,7 +333,7 @@
                         "name": "ohsDomainName",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Oracle HTTP Server Domain name",
-                        "defaultValue": "",
+                        "defaultValue": "ohsStandaloneDomain",
                         "toolTip": "Oracle HTTP Server Domain Name",
                         "constraints": {
                             "required": true,
@@ -346,7 +346,7 @@
                         "name": "ohsComponentName",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Oracle HTTP Server Component name",
-                        "defaultValue": "",
+                        "defaultValue": "ohs_component",
                         "toolTip": "Oracle HTTP Server Component name",
                         "constraints": {
                             "required": true,
