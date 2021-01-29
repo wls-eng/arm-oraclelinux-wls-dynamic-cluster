@@ -309,6 +309,27 @@
                 "visible": true
             },
             {
+                "name": "useSystemAssignedManagedIdentity",
+                "label": "Cause a system assigned managed identity to be created for the VM(s).",
+                "type": "Microsoft.Common.OptionsGroup",
+                "toolTip": "System assigned managed identities enable credential-free secure access to many Azure resources from this VM.",
+                "constraints": {
+                    "allowedValues": [
+                        {
+                            "label": "Yes",
+                            "value": true
+                        },
+                        {
+                            "label": "No",
+                            "value": false
+                        }
+                    ],
+                    "required": true
+                },
+                "defaultValue": "Yes",
+                "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+            }, 
+            {
                 "name": "About",
                 "type": "Microsoft.Common.InfoBox",
                 "options": {
