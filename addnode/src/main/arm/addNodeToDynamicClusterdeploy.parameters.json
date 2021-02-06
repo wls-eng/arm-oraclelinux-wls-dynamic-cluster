@@ -54,6 +54,19 @@
     },
     "wlsPassword": {
       "value": "GEN-UNIQUE"
+    },
+    "customSSLSettings": {
+        "value": {
+            "enable": false,
+            "customIdentityKeyStoreBase64String": "GEN-UNIQUE",
+            "customIdentityKeyStorePassPhrase": "GEN-UNIQUE",
+            "customIdentityKeyStoreType": "GEN-UNIQUE",
+            "customTrustKeyStoreBase64String": "GEN-UNIQUE",
+            "customTrustKeyStorePassPhrase": "GEN-UNIQUE",
+            "customTrustKeyStoreType": "GEN-UNIQUE",
+            "privateKeyAliasSecret": "GEN-UNIQUE",
+            "privateKeyPassPhraseSecret": "GEN-UNIQUE"
+        }
     }
   }
 }

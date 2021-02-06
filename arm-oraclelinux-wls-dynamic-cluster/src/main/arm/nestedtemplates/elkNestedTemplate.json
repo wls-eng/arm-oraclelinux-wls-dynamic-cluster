@@ -125,7 +125,7 @@
         "const_logIndex": "[concat('azure-weblogic-dynamic-cluster-', parameters('guidValue'))]",
         "const_managedCacheVMPrefix": "[concat(parameters('managedServerPrefix'),'StorageVM')]",
         "const_managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
-        "const_wlsAdminPort": "7001",
+        "const_wlsAdminPort": "7005",
         "const_wlsDomainPath": "[concat('/u01/domains/', parameters('wlsDomainName'))]",
         "const_wlsHome": "/u01/app/wls/install/oracle/middleware/oracle_home",
         "name_scriptELKConfiguration": "elkIntegrationForDynamicCluster.sh"

@@ -9,7 +9,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./addnode.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <serverIndex> <wlsAdminURL> <oracleHome> <wlsDomainPath> <dynamicClusterSize> <vmNamePrefix> <storageAccountName> <storageAccountKey> <mountpointPath> <wlsADSSLCer> <wlsLDAPPublicIP> <adServerHost> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <maxDynamicClusterSize>"
+  echo_stderr "./addnode.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <serverIndex> <wlsAdminURL> <oracleHome> <wlsDomainPath> <dynamicClusterSize> <vmNamePrefix> <storageAccountName> <storageAccountKey> <mountpointPath> <wlsADSSLCer> <wlsLDAPPublicIP> <adServerHost> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <maxDynamicClusterSize>  <isCustomSSLenabled> <customIdentityKeyStoreBase64String> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreBase64String> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <privateKeyAlias> <privateKeyPassPhrase>"
 }
 
 function installUtilities()
@@ -128,6 +128,17 @@ function validateInput()
     if [ -z "$maxDynamicClusterSize" ]; then
         echo_stderr "maxDynamicClusterSize is required. "
     fi
+
+    if [ ! -z "$isCustomSSLEnabled" == "true" ];
+    then
+        if [[ -z "$customIdentityKeyStoreBase64String" || -z "$customIdentityKeyStorePassPhrase"  || -z "$customIdentityKeyStoreType" ||
+              -z "$customTrustKeyStoreBase64String" || -z "$customTrustKeyStorePassPhrase"  || -z "$customTrustKeyStoreType" ||
+              -z "$privateKeyAlias" || -z "$privateKeyPassPhrase" ]]
+        then
+            echo_stderr "customIdentityKeyStoreBase64String, customIdentityKeyStorePassPhrase, customIdentityKeyStoreType, customTrustKeyStoreBase64String, customTrustKeyStorePassPhrase, customTrustKeyStoreType, privateKeyAlias and privateKeyPassPhrase are required. "
+            exit 1
+        fi
+    fi
 }
 
 #Function to cleanup all temporary files
@@ -176,6 +187,33 @@ topology:
         '${dynamicServerTemplate}' :
             ListenPort: ${wlsManagedPort}
             Cluster: '${wlsClusterName}'
+            SSL:
+                HostnameVerificationIgnored: true
+                HostnameVerifier: 'None'
+EOF
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+                ServerPrivateKeyAlias: "$serverPrivateKeyAlias"
+                ServerPrivateKeyPassPhraseEncrypted: "$serverPrivateKeyPassPhrase"
+EOF
+        fi
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+            KeyStores: 'CustomIdentityAndCustomTrust'
+            CustomIdentityKeyStoreFileName: "$customIdentityKeyStoreFileName"
+            CustomIdentityKeyStoreType: "$customIdentityKeyStoreType"
+            CustomIdentityKeyStorePassPhraseEncrypted: "$customIdentityKeyStorePassPhrase"
+            CustomTrustKeyStoreFileName: "$customTrustKeyStoreFileName"
+            CustomTrustKeyStoreType: "$customTrustKeyStoreType"
+            CustomTrustKeyStorePassPhraseEncrypted: "$customTrustKeyStorePassPhrase"
+EOF
+        fi
+
+cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
    SecurityConfiguration:
         NodeManagerUsername: "$wlsUserName"
         NodeManagerPasswordEncrypted: "$wlsPassword"
@@ -333,6 +371,16 @@ function create_nodemanager_service()
    echo "Warning : Failed in setting option CrashRecoveryEnabled=true. Continuing without the option."
    mv $wlsDomainPath/nodemanager/nodemanager.properties.bak $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
  fi
+
+ if [ "${isCustomSSLEnabled}" == "true" ];
+ then
+    echo "KeyStores=CustomIdentityAndCustomTrust" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomIdentityKeyStoreFileName=${customSSLIdentityKeyStoreFile}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomIdentityAlias=${privateKeyAlias}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomIdentityPrivateKeyPassPhrase=${customIdentityKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomTrustKeyStoreFileName=${customSSLTrustKeyStoreFile}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+ fi
+
  sudo chown -R $username:$groupname $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties*
  echo "Creating NodeManager service"
  cat <<EOF >/etc/systemd/system/wls_nodemanager.service
@@ -486,6 +534,47 @@ function importAADCertificate()
     sudo ${JAVA_HOME}/bin/keytool -noprompt -import -alias aadtrust -file ${addsCertificate} -keystore ${java_cacerts_path} -storepass changeit
 }
 
+function importAADCertificateIntoWLSCustomTrustKeyStore()
+{
+    if [ "${isCustomSSLEnabled,,}" == "true" ];
+    then
+        # set java home
+        . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
+
+        # For SSL enabled causes AAD failure #225
+        # ISSUE: https://github.com/wls-eng/arm-oraclelinux-wls/issues/225
+
+        echo "Importing AAD Certificate into WLS Custom Trust Key Store: "
+
+        sudo ${JAVA_HOME}/bin/keytool -noprompt -import -trustcacerts -keystore {KEYSTORE_PATH}/trust.keystore -storepass ${customTrustKeyStorePassPhrase} -alias aadtrust -file ${addsCertificate} -storetype ${customTrustKeyStoreType}
+    else
+        echo "customSSL not enabled. Not required to configure AAD for WebLogic Custom SSL"
+    fi
+}
+
+function parseAndSaveCustomSSLKeyStoreData()
+{
+    echo "create key stores for custom ssl settings"
+
+    mkdir -p ${KEYSTORE_PATH}
+    touch ${KEYSTORE_PATH}/identityKeyStoreCerBase64String.txt
+
+    echo "$customIdentityKeyStoreBase64String" > ${KEYSTORE_PATH}/identityKeyStoreCerBase64String.txt
+    cat ${KEYSTORE_PATH}/identityKeyStoreCerBase64String.txt | base64 -d > ${KEYSTORE_PATH}/identity.keystore
+    export customSSLIdentityKeyStoreFile=${KEYSTORE_PATH}/identity.keystore
+
+    rm -rf ${KEYSTORE_PATH}/identityKeyStoreCerBase64String.txt
+
+    mkdir -p ${KEYSTORE_PATH}
+    touch ${KEYSTORE_PATH}/trustKeyStoreCerBase64String.txt
+
+    echo "$customTrustKeyStoreBase64String" > ${KEYSTORE_PATH}/trustKeyStoreCerBase64String.txt
+    cat ${KEYSTORE_PATH}/trustKeyStoreCerBase64String.txt | base64 -d > ${KEYSTORE_PATH}/trust.keystore
+    export customSSLTrustKeyStoreFile=${KEYSTORE_PATH}/trust.keystore
+
+    rm -rf ${KEYSTORE_PATH}/trustKeyStoreCerBase64String.txt
+}
+
 #main script starts here
 
 export SCRIPT_PWD=`pwd`
@@ -501,7 +590,7 @@ for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 23 ]
+if [ $# -lt 24 ]
 then
     usage
     exit 1
@@ -531,6 +620,18 @@ export logsToIntegrate=${21}
 export logIndex=${22}
 export maxDynamicClusterSize=${23}
 
+export isCustomSSLEnabled="${24}"
+isCustomSSLEnabled="${isCustomSSLEnabled,,}"
+
+export customIdentityKeyStoreBase64String="${25}"
+export customIdentityKeyStorePassPhrase="${26}"
+export customIdentityKeyStoreType="${27}"
+export customTrustKeyStoreBase64String="${28}"
+export customTrustKeyStorePassPhrase="${29}"
+export customTrustKeyStoreType="${30}"
+export privateKeyAlias="${31}"
+export privateKeyPassPhrase="${32}"
+
 export enableAAD="false"
 
 validateInput
@@ -547,16 +648,23 @@ export machineName="$machineNamePrefix-$nmHost"
 export WEBLOGIC_DEPLOY_TOOL=https://github.com/oracle/weblogic-deploy-tooling/releases/download/weblogic-deploy-tooling-1.8.1/weblogic-deploy.zip
 export username="oracle"
 export groupname="oracle"
+export KEYSTORE_PATH="$wlsDomainPath/$wlsDomainName/keystores"
 
 cleanup
 installUtilities
 mountFileShare
 updateNetworkRules "managed"
 
+if [ "$isCustomSSLEnabled" == "true" ];then
+    parseAndSaveCustomSSLKeyStoreData
+fi
+
+
 if [ "$enableAAD" == "true" ];then
     mapLDAPHostWithPublicIP
     parseLDAPCertificate
     importAADCertificate
+    importAADCertificateIntoWLSCustomTrustKeyStore
 fi
 
 create_managedSetup

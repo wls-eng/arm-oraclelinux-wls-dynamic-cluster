@@ -7,7 +7,7 @@ function echo_stderr()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./aadIntegration.sh <wlsUserName> <wlsPassword> <wlsDomainName> <wlsLDAPProviderName> <addsServerHost> <aadsPortNumber> <wlsLDAPPrincipal> <wlsLDAPPrincipalPassword> <wlsLDAPUserBaseDN> <wlsLDAPGroupBaseDN> <oracleHome> <adminVMName> <wlsAdminPort> <wlsLDAPSSLCertificate> <addsPublicIP> <wlsAdminServerName> <wlsDomainPath> <vmIndex>"  
+  echo_stderr "./aadIntegration.sh <wlsUserName> <wlsPassword> <wlsDomainName> <wlsLDAPProviderName> <addsServerHost> <aadsPortNumber> <wlsLDAPPrincipal> <wlsLDAPPrincipalPassword> <wlsLDAPUserBaseDN> <wlsLDAPGroupBaseDN> <oracleHome> <adminVMName> <wlsAdminPort> <wlsLDAPSSLCertificate> <addsPublicIP> <wlsAdminServerName> <wlsDomainPath> <isCustomSSLEnabled> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <vmIndex>"
 }
 
 function validateInput()
@@ -96,6 +96,19 @@ function validateInput()
     if [ -z "$vmIndex" ];
     then
         echo_stderr "vmIndex is required. "
+    fi
+
+
+    if [ "${isCustomSSLEnabled,,}" != "true" ];
+    then
+        echo_stderr "Custom SSL value is not provided. Defaulting to false"
+        isCustomSSLEnabled="false"
+    else
+        if   [ -z "$customTrustKeyStorePassPhrase" ];
+        then
+            echo "customTrustKeyStorePassPhrase is required "
+            exit 1
+        fi
     fi
 }
 
@@ -268,6 +281,24 @@ function importAADCertificate()
 
 }
 
+function importAADCertificateIntoWLSCustomTrustKeyStore()
+{
+    if [ "${isCustomSSLEnabled,,}" == "true" ];
+    then
+        # set java home
+        . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
+
+        # For SSL enabled causes AAD failure #225
+        # ISSUE: https://github.com/wls-eng/arm-oraclelinux-wls/issues/225
+
+        echo "Importing AAD Certificate into WLS Custom Trust Key Store: "
+
+        sudo ${JAVA_HOME}/bin/keytool -noprompt -import -trustcacerts -keystore ${DOMAIN_PATH}/${wlsDomainName}/keystores/trust.keystore -storepass ${customTrustKeyStorePassPhrase} -alias aadtrust -file ${addsCertificate} -storetype ${customTrustKeyStoreType}
+    else
+        echo "customSSL not enabled. Not required to configure AAD for WebLogic Custom SSL"
+    fi
+}
+
 function configureSSL()
 {
     echo "configure ladp ssl"
@@ -400,6 +431,7 @@ export WLS_DYNAMIC_SERVER_TEMPLATE="myServerTemplate"
 export SCRIPT_PWD=`pwd`
 export USER_ORACLE="oracle"
 export GROUP_ORACLE="oracle"
+export DOMAIN_PATH="/u01/domains"
 
 if [ $# -ne 18 ]
 then
@@ -424,7 +456,19 @@ export wlsADSSLCer="${14}"
 export wlsLDAPPublicIP="${15}"
 export wlsAdminServerName=${16}
 export wlsDomainPath=${17}
-export vmIndex=${18}
+export isCustomSSLEnabled=${18}
+export customTrustKeyStorePassPhrase="${19}"
+export customTrustKeyStoreType="${20}"
+export vmIndex=${21}
+
+export isCustomSSLEnabled="${isCustomSSLEnabled,,}"
+
+if [ "${isCustomSSLEnabled,,}" == "true" ];
+then
+    customTrustKeyStorePassPhrase=$(echo "$customTrustKeyStorePassPhrase" | base64 --decode)
+    customTrustKeyStoreType=$(echo "$customTrustKeyStoreType" | base64 --decode)
+fi
+
 export wlsAdminURL=$wlsAdminHost:$wlsAdminPort
 
 if [ $vmIndex -eq 0 ];
@@ -440,6 +484,7 @@ then
     mapLDAPHostWithPublicIP
     parseLDAPCertificate
     importAADCertificate
+    importAADCertificateIntoWLSCustomTrustKeyStore
     configureSSL
     configureAzureActiveDirectory
     restartAdminServerService
@@ -454,6 +499,7 @@ else
     mapLDAPHostWithPublicIP
     parseLDAPCertificate
     importAADCertificate
+    importAADCertificateIntoWLSCustomTrustKeyStore
     cleanup
 fi
 

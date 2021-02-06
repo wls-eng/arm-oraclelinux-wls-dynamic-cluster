@@ -9,7 +9,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./setDynamicClusterDomain.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName> <oracleHome> <storageAccountName> <storageAccountKey> <mountpointPath>"
+  echo_stderr "./setDynamicClusterDomain.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName> <oracleHome> <storageAccountName> <storageAccountKey> <mountpointPath> <denyPublicTrafficForAdminServer> <isCustomSSLEnabled> [<customIdentityKeyStoreData> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreData> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <serverPrivateKeyAlias <serverPrivateKeyPassPhrase>]"
 }
 
 function installUtilities()
@@ -90,6 +90,23 @@ function validateInput()
         echo_stderr "mountpointPath is required. "
         exit 1
     fi
+
+    if [ "${isCustomSSLEnabled}" != "true" ];
+    then
+        echo_stderr "Custom SSL value is not provided. Defaulting to false"
+        isCustomSSLEnabled="false"
+    else
+        if   [ -z "$customIdentityKeyStoreData" ]    || [ -z "$customIdentityKeyStorePassPhrase" ] ||
+             [ -z "$customIdentityKeyStoreType" ]    || [ -z "$customTrustKeyStoreData" ] ||
+             [ -z "$customTrustKeyStorePassPhrase" ] || [ -z "$customTrustKeyStoreType" ] ||
+             [ -z "$serverPrivateKeyAlias" ]         || [ -z "$serverPrivateKeyPassPhrase" ];
+        then
+            echo "One of the required values for enabling Custom SSL \
+            (CustomKeyIdentityKeyStoreData,CustomKeyIdentityKeyStorePassPhrase,CustomKeyIdentityKeyStoreType,CustomKeyTrustKeyStoreData,CustomKeyTrustKeyStorePassPhrase,CustomKeyTrustKeyStoreType) \
+            has not been provided."
+            exit 1
+        fi
+    fi
 }
 
 #Function to cleanup all temporary files
@@ -110,6 +127,8 @@ function cleanup()
 function create_admin_model()
 {
     echo "Creating admin domain model"
+    cat /dev/null > $DOMAIN_PATH/admin-domain.yaml
+
     cat <<EOF >$DOMAIN_PATH/admin-domain.yaml
 domainInfo:
    AdminUserName: "$wlsUserName"
@@ -124,6 +143,46 @@ topology:
              ListenAddress: "$nmHost"
              ListenPort: $nmPort
              NMType : ssl
+   Server:
+        '$wlsServerName':
+            ListenPort: $wlsAdminPort
+            ListenPortEnabled: ${isHTTPAdminListenPortEnabled}
+            RestartDelaySeconds: 10
+            NetworkAccessPoint:
+               'adminT3Channel':
+                   ListenAddress: '$adminVMName'
+                   ListenPort: $wlsAdminT3ChannelPort
+                   Protocol: t3
+                   Enabled: true
+            SSL:
+               ListenPort: $wlsSSLAdminPort
+               Enabled: true
+               HostnameVerificationIgnored: true
+               HostnameVerifier: 'None'
+EOF
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/admin-domain.yaml
+               ServerPrivateKeyAlias: "$serverPrivateKeyAlias"
+               ServerPrivateKeyPassPhraseEncrypted: "$serverPrivateKeyPassPhrase"
+EOF
+        fi
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/admin-domain.yaml
+            KeyStores: 'CustomIdentityAndCustomTrust'
+            CustomIdentityKeyStoreFileName: "$customIdentityKeyStoreFileName"
+            CustomIdentityKeyStoreType: "$customIdentityKeyStoreType"
+            CustomIdentityKeyStorePassPhraseEncrypted: "$customIdentityKeyStorePassPhrase"
+            CustomTrustKeyStoreFileName: "$customTrustKeyStoreFileName"
+            CustomTrustKeyStoreType: "$customTrustKeyStoreType"
+            CustomTrustKeyStorePassPhraseEncrypted: "$customTrustKeyStorePassPhrase"
+EOF
+        fi
+
+    cat <<EOF>>$DOMAIN_PATH/admin-domain.yaml
    Cluster:
         '$wlsClusterName':
             MigrationBasis: 'consensus'
@@ -149,6 +208,36 @@ topology:
         '${dynamicServerTemplate}' :
             ListenPort: ${wlsManagedPort}
             Cluster: '${wlsClusterName}'
+            SSL:
+                HostnameVerificationIgnored: true
+                HostnameVerifier: 'None'
+EOF
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/admin-domain.yaml
+                ServerPrivateKeyAlias: "$serverPrivateKeyAlias"
+                ServerPrivateKeyPassPhraseEncrypted: "$serverPrivateKeyPassPhrase"
+EOF
+        fi
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/admin-domain.yaml
+            KeyStores: 'CustomIdentityAndCustomTrust'
+            CustomIdentityKeyStoreFileName: "$customIdentityKeyStoreFileName"
+            CustomIdentityKeyStoreType: "$customIdentityKeyStoreType"
+            CustomIdentityKeyStorePassPhraseEncrypted: "$customIdentityKeyStorePassPhrase"
+            CustomTrustKeyStoreFileName: "$customTrustKeyStoreFileName"
+            CustomTrustKeyStoreType: "$customTrustKeyStoreType"
+            CustomTrustKeyStorePassPhraseEncrypted: "$customTrustKeyStorePassPhrase"
+EOF
+        fi
+
+cat <<EOF>>$DOMAIN_PATH/admin-domain.yaml
+   SecurityConfiguration:
+        NodeManagerUsername: "$wlsUserName"
+        NodeManagerPasswordEncrypted: "$wlsPassword"
 EOF
 }
 
@@ -184,6 +273,32 @@ topology:
         '${dynamicServerTemplate}':
             ListenPort: ${wlsManagedPort}
             Cluster: '${wlsClusterName}'
+            SSL:
+                HostnameVerificationIgnored: true
+                HostnameVerifier: 'None'
+EOF
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+                ServerPrivateKeyAlias: "$serverPrivateKeyAlias"
+                ServerPrivateKeyPassPhraseEncrypted: "$serverPrivateKeyPassPhrase"
+EOF
+        fi
+
+        if [ "${isCustomSSLEnabled}" == "true" ];
+        then
+cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+            KeyStores: 'CustomIdentityAndCustomTrust'
+            CustomIdentityKeyStoreFileName: "$customIdentityKeyStoreFileName"
+            CustomIdentityKeyStoreType: "$customIdentityKeyStoreType"
+            CustomIdentityKeyStorePassPhraseEncrypted: "$customIdentityKeyStorePassPhrase"
+            CustomTrustKeyStoreFileName: "$customTrustKeyStoreFileName"
+            CustomTrustKeyStoreType: "$customTrustKeyStoreType"
+            CustomTrustKeyStorePassPhraseEncrypted: "$customTrustKeyStorePassPhrase"
+EOF
+        fi
+
+cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
    SecurityConfiguration:
         NodeManagerUsername: "$wlsUserName"
         NodeManagerPasswordEncrypted: "$wlsPassword"
@@ -267,6 +382,9 @@ function create_adminSetup()
        exit 1
     fi
     sudo unzip -o weblogic-deploy.zip -d $DOMAIN_PATH
+
+    storeCustomSSLCerts
+
     create_admin_model
     sudo chown -R $username:$groupname $DOMAIN_PATH
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; $DOMAIN_PATH/weblogic-deploy/bin/createDomain.sh -oracle_home $oracleHome -domain_parent $DOMAIN_PATH  -domain_type WLS -model_file $DOMAIN_PATH/admin-domain.yaml" 
@@ -373,6 +491,9 @@ function create_managedSetup(){
        exit 1
     fi
     sudo unzip -o weblogic-deploy.zip -d $DOMAIN_PATH
+
+    storeCustomSSLCerts
+
     echo "Creating managed server model files"
     create_managed_model
     createMachinePyScript
@@ -408,11 +529,24 @@ function create_nodemanager_service()
  echo "Creating services for Nodemanager"
  echo "Setting CrashRecoveryEnabled true at $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties"
  sed -i.bak -e 's/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g'  $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+
+ sed -i.bak -e 's/ListenAddress=.*/ListenAddress=/g'  $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+
+if [ "${isCustomSSLEnabled}" == "true" ];
+then
+    echo "KeyStores=CustomIdentityAndCustomTrust" >> $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomIdentityKeyStoreFileName=${customIdentityKeyStoreFileName}" >> $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomIdentityAlias=${serverPrivateKeyAlias}" >> $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomIdentityPrivateKeyPassPhrase=${customIdentityKeyStorePassPhrase}" >> $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+    echo "CustomTrustKeyStoreFileName=${customTrustKeyStoreFileName}" >> $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
+fi
+
  if [ $? != 0 ];
  then
    echo "Warning : Failed in setting option CrashRecoveryEnabled=true. Continuing without the option."
    mv $DOMAIN_PATH/nodemanager/nodemanager.properties.bak $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties
  fi
+
  sudo chown -R $username:$groupname $DOMAIN_PATH/$wlsDomainName/nodemanager/nodemanager.properties*
  echo "Creating NodeManager service"
  cat <<EOF >/etc/systemd/system/wls_nodemanager.service
@@ -513,6 +647,7 @@ function updateNetworkRules()
         echo "update network rules for admin server"
         sudo firewall-cmd --zone=public --add-port=$wlsAdminPort/tcp
         sudo firewall-cmd --zone=public --add-port=$wlsSSLAdminPort/tcp
+        sudo firewall-cmd --zone=public --add-port=$wlsAdminT3ChannelPort/tcp
         sudo firewall-cmd --zone=public --add-port=$nmPort/tcp
     else
         maxManagedIndex=1
@@ -612,6 +747,38 @@ sudo chmod -R 750 ${stopWebLogicScript}
 
 }
 
+function storeCustomSSLCerts()
+{
+    if [ "${isCustomSSLEnabled}" == "true" ];
+    then
+
+        mkdir -p $KEYSTORE_PATH
+
+        echo "Custom SSL is enabled. Storing CertInfo as files..."
+        export customIdentityKeyStoreFileName="$KEYSTORE_PATH/identity.keystore"
+        export customTrustKeyStoreFileName="$KEYSTORE_PATH/trust.keystore"
+
+        customIdentityKeyStoreData=$(echo "$customIdentityKeyStoreData" | base64 --decode)
+        customIdentityKeyStorePassPhrase=$(echo "$customIdentityKeyStorePassPhrase" | base64 --decode)
+        customIdentityKeyStoreType=$(echo "$customIdentityKeyStoreType" | base64 --decode)
+
+        customTrustKeyStoreData=$(echo "$customTrustKeyStoreData" | base64 --decode)
+        customTrustKeyStorePassPhrase=$(echo "$customTrustKeyStorePassPhrase" | base64 --decode)
+        customTrustKeyStoreType=$(echo "$customTrustKeyStoreType" | base64 --decode)
+
+        serverPrivateKeyAlias=$(echo "$serverPrivateKeyAlias" | base64 --decode)
+        serverPrivateKeyPassPhrase=$(echo "$serverPrivateKeyPassPhrase" | base64 --decode)
+
+        #decode cert data once again as it would got base64 encoded while  storing in azure keyvault
+        echo "$customIdentityKeyStoreData" | base64 --decode > $customIdentityKeyStoreFileName
+        echo "$customTrustKeyStoreData" | base64 --decode > $customTrustKeyStoreFileName
+
+    else
+        echo "Custom SSL is not enabled"
+    fi
+}
+
+
 #main script starts here
 
 CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -628,7 +795,7 @@ for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 13 ]
+if [ $# -lt 15 ]
 then
     usage
     exit 1
@@ -647,9 +814,41 @@ export oracleHome=${10}
 export storageAccountName=${11}
 export storageAccountKey=${12}
 export mountpointPath=${13}
+
 export DOMAIN_PATH="/u01/domains"
 export startWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/startWebLogic.sh"
 export stopWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/bin/customStopWebLogic.sh"
+
+export denyPublicTrafficForAdminServer="${14}"
+denyPublicTrafficForAdminServer="${denyPublicTrafficForAdminServer,,}"
+
+export isHTTPAdminListenPortEnabled="true"
+
+if [ "${denyPublicTrafficForAdminServer}" == "true" ];
+then
+    isHTTPAdminListenPortEnabled="false"
+else
+    isHTTPAdminListenPortEnabled="true"
+fi
+
+export isCustomSSLEnabled="${15}"
+isCustomSSLEnabled="${isCustomSSLEnabled,,}"
+
+#case insensitive check
+if [ "${isCustomSSLEnabled}" == "true" ];
+then
+    echo "custom ssl enabled. Reading keystore information"
+    export customIdentityKeyStoreData="${16}"
+    export customIdentityKeyStorePassPhrase="${17}"
+    export customIdentityKeyStoreType="${18}"
+    export customTrustKeyStoreData="${19}"
+    export customTrustKeyStorePassPhrase="${20}"
+    export customTrustKeyStoreType="${21}"
+    export serverPrivateKeyAlias="${22}"
+    export serverPrivateKeyPassPhrase="${23}"
+else
+    isCustomSSLEnabled="false"
+fi
 
 # Always index 0 is set as admin server
 export coherenceListenPort=7574
@@ -657,8 +856,21 @@ export coherenceLocalport=42000
 export coherenceLocalportAdjust=42200
 export wlsAdminPort=7001
 export wlsSSLAdminPort=7002
+export wlsAdminT3ChannelPort=7005
 export wlsManagedPort=8001
-export wlsAdminURL="$adminVMName:$wlsAdminPort"
+
+export wlsAdminURL="$wlsAdminHost:$wlsAdminT3ChannelPort"
+export SERVER_START_URL="http://$wlsAdminURL"
+export KEYSTORE_PATH="${DOMAIN_PATH}/${wlsDomainName}/keystores"
+
+if [ "${isCustomSSLEnabled}" == "true" ];
+then
+   SERVER_START_URL="https://$wlsAdminHost:$wlsSSLAdminPort"
+fi
+
+export CHECK_URL="http://$wlsAdminURL/weblogic/ready"
+export adminWlstURL="t3://$wlsAdminURL"
+
 export wlsClusterName="cluster1"
 export dynamicServerTemplate="myServerTemplate"
 export nmHost=`hostname`
