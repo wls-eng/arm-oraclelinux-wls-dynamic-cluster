@@ -316,7 +316,7 @@ function getWLSClusterAddress()
         exit 1
     fi
     # Default admin URL is "defaultURL": "t3:\/\/10.0.0.6:7001" which is not required as part of cluster address
-    msString=` cat out | grep defaultURL | grep -v "7001" | cut -f3 -d"/" `
+    msString=` cat out | grep defaultURL | grep -v "7001\|7005" | cut -f3 -d"/" `
     wlsClusterAddress=`echo $msString | sed 's/\" /,/g'`
     export WLS_CLUSTER_ADDRESS=${wlsClusterAddress::-1}
   
@@ -493,6 +493,7 @@ export OHS_DOMAIN_PATH=${DOMAIN_PATH}/${OHS_DOMAIN_NAME}
 export OHS_VAULT_PATH="${DOMAIN_PATH}/ohsvault"
 export  groupname="oracle"
 export  username="oracle"
+
 
 
 validateInput

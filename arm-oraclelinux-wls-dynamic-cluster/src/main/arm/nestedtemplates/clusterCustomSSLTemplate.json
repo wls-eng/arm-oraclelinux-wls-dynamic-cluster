@@ -252,7 +252,8 @@
         "ref_fileService": "[resourceId('Microsoft.Storage/storageAccounts/fileServices', variables('name_storageAccount'), 'default')]",
         "ref_networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('name_networkSecurityGroup'))]",
         "ref_storage": "[resourceId('Microsoft.Storage/storageAccounts', variables('name_storageAccount'))]",
-        "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]"
+        "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]",
+        "t3AdminPort": "[if(parameters('denyPublicTrafficForAdminServer'),'7005','7001')]"
     },
     "resources": [
         {
@@ -648,11 +649,11 @@
         },
         "adminConsole": {
             "type": "string",
-            "value": "[concat('http://',reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn,':7001/console')]"
+            "value": "[concat('http://',reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn,':',variables('t3AdminPort'),'/console')]"
         },
         "adminSecuredConsole": {
             "type": "string",
-            "value": "[concat('https://',reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn,':7002/console')]"
+            "value": "[concat('https://',reference(variables('name_outputAdminHost'), '${azure.apiVersion}').dnsSettings.fqdn,':',variables('t3AdminPort'),'7002/console')]"
         },
         "storageAccountName": {
             "type": "string",
@@ -664,7 +665,7 @@
         },
         "adminRestMgmtURL":{
             "type": "string",
-            "value": "[concat('http://',parameters('adminVMName'),':7001/management/weblogic/latest')]"
+            "value": "[concat('http://',parameters('adminVMName'),':',variables('t3AdminPort'),'/management/weblogic/latest')]"
         }
     }
 }

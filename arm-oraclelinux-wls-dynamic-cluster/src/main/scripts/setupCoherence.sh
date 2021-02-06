@@ -514,7 +514,8 @@ export storageClusterName="storage1"
 export storageListenPort=7501
 export weblogicDeployTool=https://github.com/oracle/weblogic-deploy-tooling/releases/download/weblogic-deploy-tooling-1.8.1/weblogic-deploy.zip
 export username="oracle"
-export wlsAdminURL="${adminVMName}:7001"
+export wlsAdminT3ChannelPort=7005
+export wlsAdminURL="${adminVMName}:${wlsAdminT3ChannelPort}"
 export wlsCoherenceUnicastPortRange="-Dcoherence.localport=$coherenceLocalport -Dcoherence.localport.adjust=$coherenceLocalportAdjust"
 export wlsServerTemplate="myServerTemplate"
 

@@ -194,16 +194,6 @@ EOF
                 CalculatedMachineNames: true
                 ServerNamePrefix: "${managedServerPrefix}"
                 MachineNameMatchExpression: "$machineNamePrefix-${vmNamePrefix}*"
-   Server:
-        '$wlsServerName':
-            ListenPort: $wlsAdminPort
-            RestartDelaySeconds: 10
-            SSL:
-                ListenPort: $wlsSSLAdminPort
-                Enabled: true	      
-   SecurityConfiguration:
-        NodeManagerUsername: "$wlsUserName"
-        NodeManagerPasswordEncrypted: "$wlsPassword"                
    ServerTemplate:
         '${dynamicServerTemplate}' :
             ListenPort: ${wlsManagedPort}
@@ -859,13 +849,13 @@ export wlsSSLAdminPort=7002
 export wlsAdminT3ChannelPort=7005
 export wlsManagedPort=8001
 
-export wlsAdminURL="$wlsAdminHost:$wlsAdminT3ChannelPort"
+export wlsAdminURL="$adminVMName:$wlsAdminT3ChannelPort"
 export SERVER_START_URL="http://$wlsAdminURL"
 export KEYSTORE_PATH="${DOMAIN_PATH}/${wlsDomainName}/keystores"
 
 if [ "${isCustomSSLEnabled}" == "true" ];
 then
-   SERVER_START_URL="https://$wlsAdminHost:$wlsSSLAdminPort"
+   SERVER_START_URL="https://$adminVMName:$wlsSSLAdminPort"
 fi
 
 export CHECK_URL="http://$wlsAdminURL/weblogic/ready"
