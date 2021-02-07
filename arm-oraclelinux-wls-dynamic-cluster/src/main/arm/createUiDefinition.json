@@ -351,21 +351,21 @@
                         "name": "ohsSkuUrnVersion",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Oracle HTTP Server image",
-                        "defaultValue": "OHS Server 12.2.1.4.0 and JDK8 on Oracle Linux 7.6",
+                        "defaultValue": "OHS 12.2.1.4.0 and JDK8 on Oracle Linux 7.6",
                         "toolTip": "Choose Oracle HTTP Server image, which is provided by Oracle, with Java and HTTP Server preinstalled.",
                         "constraints": {
                             "allowedValues": [
                                 {
-                                    "label": "OHS Server 12.2.1.4.0 and JDK8 on Oracle Linux 7.3",
-                                    "value": "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol73;latest"
+                                    "label": "OHS 12.2.1.4.0 and JDK8 on Oracle Linux 7.3",
+                                    "value": "ohs-122140-jdk8-ol73;ohs-122140-jdk8-ol73;latest"
                                 },
                                 {
-                                    "label": "OHS Server 12.2.1.4.0 and JDK8 on Oracle Linux 7.4",
-                                    "value": "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol74;latest"
+                                    "label": "OHS 12.2.1.4.0 and JDK8 on Oracle Linux 7.4",
+                                    "value": "ohs-122140-jdk8-ol74;ohs-122140-jdk8-ol74;latest"
                                 },
                                 {
-                                    "label": "OHS Server 12.2.1.4.0 and JDK8 on Oracle Linux 7.6",
-                                    "value": "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest"
+                                    "label": "OHS 12.2.1.4.0 and JDK8 on Oracle Linux 7.6",
+                                    "value": "ohs-122140-jdk8-ol76;ohs-122140-jdk8-ol76;latest"
                                 }
                             ]
                          },

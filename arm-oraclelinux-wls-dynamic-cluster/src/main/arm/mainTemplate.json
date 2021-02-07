@@ -295,11 +295,11 @@
         },
         "ohsSkuUrnVersion": {
             "type": "string",
-            "defaultValue": "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest",
+            "defaultValue": "ohs-122140-jdk8-ol76;ohs-122140-jdk8-ol76;latest",
             "allowedValues": [
-              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol76;latest",
-              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol74;latest",
-              "wls-base-image-test1-preview;test-ohs-122140-jdk8-ol73;latest"
+              "ohs-122140-jdk8-ol76;ohs-122140-jdk8-ol76;latest",
+              "ohs-122140-jdk8-ol74;ohs-122140-jdk8-ol74;latest",
+              "ohs-122140-jdk8-ol73;ohs-122140-jdk8-ol73;latest"
              ],                    
             "metadata": {
                 "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"            
