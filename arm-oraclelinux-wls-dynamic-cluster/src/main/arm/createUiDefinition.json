@@ -292,7 +292,7 @@
                 "type": "Microsoft.Common.InfoBox",
                 "options": {
                     "icon": "None",
-                    "text": "Template version ${project.version}"
+                    "text": "Template version 1.0.23"
                 },
                 "visible": "[bool('true')]"
             }
