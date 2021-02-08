@@ -196,7 +196,7 @@
         "ref_networkSecurityGroup": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('name_networkSecurityGroup'))]",
         "ref_storage": "[resourceId('Microsoft.Storage/storageAccounts', variables('name_storageAccount'))]",
         "ref_subnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('name_virtualNetwork'), variables('name_subnet'))]",
-        "t3AdminPort": "[if(parameters('denyPublicTrafficForAdminServer'),'7005','7001')]"
+        "t3AdminPort": "[if(not(parameters('enableHTTPAdminListenPort')),'7005','7001')]"
     },
     "resources": [
         {
