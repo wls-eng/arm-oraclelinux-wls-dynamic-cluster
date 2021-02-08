@@ -433,7 +433,7 @@ export USER_ORACLE="oracle"
 export GROUP_ORACLE="oracle"
 export DOMAIN_PATH="/u01/domains"
 
-if [ $# -ne 18 ]
+if [ $# -ne 21 ]
 then
     usage
 	exit 1

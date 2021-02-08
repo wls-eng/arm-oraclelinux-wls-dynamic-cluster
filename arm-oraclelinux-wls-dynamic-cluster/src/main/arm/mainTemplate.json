@@ -1002,7 +1002,8 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "${azure.apiVersion}",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'aadLinkedTemplate')]"
+                "[resourceId('Microsoft.Resources/deployments', 'aadLinkedTemplate')]",
+                "[resourceId('Microsoft.Resources/deployments', 'aadLinkedTemplateWithCustomSSL')]"
             ],
             "condition": "[parameters('enableELK')]",
             "properties": {
@@ -1151,7 +1152,8 @@
             "name": "ohsLinkedTemplate",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', variables('clusterTemplateRef'))]"
+                "[resourceId('Microsoft.Resources/deployments', variables('clusterTemplateRef'))]",
+                "[resourceId('Microsoft.Resources/deployments', 'coherenceTemplate')]"
             ],
             "apiVersion": "${azure.apiVersion}",
             "condition": "[parameters('enableOHS')]",
