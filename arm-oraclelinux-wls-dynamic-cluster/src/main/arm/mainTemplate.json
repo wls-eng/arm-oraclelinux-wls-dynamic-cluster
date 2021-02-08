@@ -627,8 +627,8 @@
                     "wlsUserName": {
                         "value": "[parameters('wlsUserName')]"
                     },
-                    "denyPublicTrafficForAdminServer":{
-                        "value": "[parameters('denyPublicTrafficForAdminServer')]"
+                    "enableHTTPAdminListenPort":{
+                        "value": "[parameters('enableHTTPAdminListenPort')]"
                     }
                 }
             }
