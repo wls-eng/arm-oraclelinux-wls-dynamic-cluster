@@ -9,7 +9,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./setDynamicClusterDomain.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName> <oracleHome> <storageAccountName> <storageAccountKey> <mountpointPath> <denyPublicTrafficForAdminServer> <isCustomSSLEnabled> [<customIdentityKeyStoreData> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreData> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <serverPrivateKeyAlias <serverPrivateKeyPassPhrase>]"
+  echo_stderr "./setDynamicClusterDomain.sh <wlsDomainName> <wlsUserName> <wlsPassword> <managedServerPrefix> <index value> <vmNamePrefix> <maxDynamicClusterSize> <adminVMName> <oracleHome> <storageAccountName> <storageAccountKey> <mountpointPath> <enableHTTPAdminListenPort> <isCustomSSLEnabled> [<customIdentityKeyStoreData> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreData> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <serverPrivateKeyAlias <serverPrivateKeyPassPhrase>]"
 }
 
 function installUtilities()
@@ -809,17 +809,8 @@ export DOMAIN_PATH="/u01/domains"
 export startWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/startWebLogic.sh"
 export stopWebLogicScript="${DOMAIN_PATH}/${wlsDomainName}/bin/customStopWebLogic.sh"
 
-export denyPublicTrafficForAdminServer="${14}"
-denyPublicTrafficForAdminServer="${denyPublicTrafficForAdminServer,,}"
-
-export isHTTPAdminListenPortEnabled="true"
-
-if [ "${denyPublicTrafficForAdminServer}" == "true" ];
-then
-    isHTTPAdminListenPortEnabled="false"
-else
-    isHTTPAdminListenPortEnabled="true"
-fi
+export isHTTPAdminListenPortEnabled="${14}"
+isHTTPAdminListenPortEnabled="${isHTTPAdminListenPortEnabled,,}"
 
 export isCustomSSLEnabled="${15}"
 isCustomSSLEnabled="${isCustomSSLEnabled,,}"

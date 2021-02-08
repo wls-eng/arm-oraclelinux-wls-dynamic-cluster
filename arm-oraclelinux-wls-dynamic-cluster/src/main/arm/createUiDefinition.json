@@ -264,6 +264,27 @@
                         "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
                     },
                     {
+                        "name": "enableAdminHTTPListenPort",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Enable HTTP Listen Port on WebLogic Administration Server?",
+                        "defaultValue": "Yes",
+                        "toolTip": "Select 'No' to disable HTTP Listen Port on WebLogic Administration Server.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "Yes",
+                                    "value": true
+                                },
+                                {
+                                    "label": "No",
+                                    "value": false
+                                }
+                            ],
+                            "required": true
+                        },
+                        "visible": "[bool(basics('basicsOptional').basicsOptionalAcceptDefaults)]"
+                    },
+                    {
                         "name": "useSystemAssignedManagedIdentity",
                         "label": "Cause a system assigned managed identity to be created for the VM(s).",
                         "type": "Microsoft.Common.OptionsGroup",
@@ -1374,6 +1395,7 @@
             "keyVaultName": "[steps('section_ohs').keyVaultName]",
             "keyVaultSSLCertDataSecretName": "[steps('section_ohs').keyVaultSSLCertDataSecretName]",
             "keyVaultSSLCertPasswordSecretName": "[steps('section_ohs').keyVaultSSLCertPasswordSecretName]",
+            "enableHTTPAdminListenPort": "[basics('basicsOptional').enableAdminHTTPListenPort]",
             "enableCustomSSL": "[steps('section_sslConfiguration').enableCustomSSL]",
             "adminSSLKeyVaultResourceGroup": "[steps('section_sslConfiguration').customSSLSettings.keyVaultResourceGroup]",
             "adminSSLKeyVaultName": "[steps('section_sslConfiguration').customSSLSettings.keyVaultName]",

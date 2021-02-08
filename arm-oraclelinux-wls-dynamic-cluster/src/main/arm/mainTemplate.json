@@ -444,6 +444,13 @@
                 "description": "Username for your Weblogic domain name"
             }
 		},
+        "enableHTTPAdminListenPort": {
+           "defaultValue": true,
+           "type": "bool",
+           "metadata": {
+              "description": "Boolean value indicating, if WebLogic Admin Server HTTP Listen Port is enabled or not"
+           }
+        },
 		"enableCustomSSL": {
 			"defaultValue": false,
 			"type": "bool",
@@ -695,8 +702,8 @@
 					"wlsUserName": {
 						"value": "[parameters('wlsUserName')]"
 					},
-                    "denyPublicTrafficForAdminServer":{
-                        "value": "[parameters('denyPublicTrafficForAdminServer')]"
+                    "enableHTTPAdminListenPort":{
+                        "value": "[parameters('enableHTTPAdminListenPort')]"
                     },
                     "enableCustomSSL": {
                         "value": "[parameters('enableCustomSSL')]"
