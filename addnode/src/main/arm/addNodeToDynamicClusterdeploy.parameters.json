@@ -64,8 +64,8 @@
             "customTrustKeyStoreBase64String": "GEN-UNIQUE",
             "customTrustKeyStorePassPhrase": "GEN-UNIQUE",
             "customTrustKeyStoreType": "GEN-UNIQUE",
-            "privateKeyAliasSecret": "GEN-UNIQUE",
-            "privateKeyPassPhraseSecret": "GEN-UNIQUE"
+            "privateKeyAlias": "GEN-UNIQUE",
+            "privateKeyPassPhrase": "GEN-UNIQUE"
         }
     }
   }
