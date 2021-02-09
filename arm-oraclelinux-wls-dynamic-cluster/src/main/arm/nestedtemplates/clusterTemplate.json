@@ -97,18 +97,18 @@
             }
         },
         "skuUrnVersion": {
-           "type": "string",
-           "defaultValue": "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest",
-           "allowedValues": [
-              "owls-122130-jdk8-ol73;Oracle:weblogic-122130-jdk8-ol73:owls-122130-jdk8-ol7;latest",
-              "owls-122130-jdk8-ol74;Oracle:weblogic-122130-jdk8-ol74:owls-122130-jdk8-ol7;latest",
-              "owls-122140-jdk8-ol76;Oracle:weblogic-122140-jdk8-ol76:owls-122140-jdk8-ol7;latest",
-              "owls-141100-jdk8-ol76;Oracle:weblogic-141100-jdk8-ol76:owls-141100-jdk8-ol7;latest",
-              "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest"
-           ],
-           "metadata": {
-              "description": "The Oracle Linux image with Weblogic and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
-           }
+            "type": "string",
+            "defaultValue": "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest",
+            "allowedValues": [
+                "owls-122130-jdk8-ol73;Oracle:weblogic-122130-jdk8-ol73:owls-122130-jdk8-ol7;latest",
+                "owls-122130-jdk8-ol74;Oracle:weblogic-122130-jdk8-ol74:owls-122130-jdk8-ol7;latest",
+                "owls-122140-jdk8-ol76;Oracle:weblogic-122140-jdk8-ol76:owls-122140-jdk8-ol7;latest",
+                "owls-141100-jdk8-ol76;Oracle:weblogic-141100-jdk8-ol76:owls-141100-jdk8-ol7;latest",
+                "owls-141100-jdk11-ol76;Oracle:weblogic-141100-jdk11-ol76:owls-141100-jdk11-ol7;latest"
+            ],
+            "metadata": {
+                "description": "The Oracle Linux image with Weblogic and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
+            }
         },
         "usePreviewImage": {
             "type": "bool",
@@ -149,7 +149,7 @@
                 "description": "Username for your Weblogic domain name"
             }
         },
-        "enableHTTPAdminListenPort":{
+        "enableHTTPAdminListenPort": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
@@ -276,29 +276,29 @@
             }
         },
         {
-			"type": "Microsoft.Storage/storageAccounts/fileServices",
-			"apiVersion": "${azure.apiVersion2}",
-			"name": "[concat(variables('name_storageAccount'), '/default')]",
-			"dependsOn": [
-				"[variables('ref_storage')]"
-			],
-			"sku": {
-				"name": "Standard_LRS",
-				"tier": "Standard"
-			}
-		},
-		{
-			"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-			"apiVersion": "${azure.apiVersion2}",
-			"name": "[concat(variables('name_storageAccount'), '/default/', variables('name_share'))]",
-			"dependsOn": [
-				"[variables('ref_fileService')]",
-				"[variables('ref_storage')]"
-			],
-			"properties": {
-				"shareQuota": 5
-			}
-		},
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "${azure.apiVersion2}",
+            "name": "[concat(variables('name_storageAccount'), '/default')]",
+            "dependsOn": [
+                "[variables('ref_storage')]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "${azure.apiVersion2}",
+            "name": "[concat(variables('name_storageAccount'), '/default/', variables('name_share'))]",
+            "dependsOn": [
+                "[variables('ref_fileService')]",
+                "[variables('ref_storage')]"
+            ],
+            "properties": {
+                "shareQuota": 5
+            }
+        },
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "${azure.apiVersion}",
@@ -610,7 +610,7 @@
             "type": "string",
             "value": "[variables('name_virtualNetwork')]"
         },
-        "adminRestMgmtURL":{
+        "adminRestMgmtURL": {
             "type": "string",
             "value": "[concat('http://',parameters('adminVMName'),':',variables('t3AdminPort'),'/management/weblogic/latest')]"
         }

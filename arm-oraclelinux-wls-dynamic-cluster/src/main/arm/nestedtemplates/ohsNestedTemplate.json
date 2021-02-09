@@ -118,10 +118,10 @@
             "type": "string",
             "defaultValue": "ohs-122140-jdk8-ol76;ohs-122140-jdk8-ol76;latest",
             "allowedValues": [
-              "ohs-122140-jdk8-ol76;ohs-122140-jdk8-ol76;latest",
-              "ohs-122140-jdk8-ol74;ohs-122140-jdk8-ol74;latest",
-              "ohs-122140-jdk8-ol73;ohs-122140-jdk8-ol73;latest"
-             ],                    
+                "ohs-122140-jdk8-ol76;ohs-122140-jdk8-ol76;latest",
+                "ohs-122140-jdk8-ol74;ohs-122140-jdk8-ol74;latest",
+                "ohs-122140-jdk8-ol73;ohs-122140-jdk8-ol73;latest"
+            ],
             "metadata": {
                 "description": "The Oracle Linux image with OHS and Java preinstalled. Semicolon separated string of Sku, URN, and Version"
             }
@@ -147,7 +147,7 @@
         "oracleVaultPswd": {
             "type": "string",
             "metadata": {
-				"description": "Password for Oracle Vault required for OHS SSL setup"
+                "description": "Password for Oracle Vault required for OHS SSL setup"
             }
         },
         "storageAccountName": {
@@ -339,7 +339,7 @@
             "apiVersion": "${azure.apiVersion}",
             "location": "[parameters('location')]",
             "dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/', parameters('ohsVMName'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines/', parameters('ohsVMName'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
