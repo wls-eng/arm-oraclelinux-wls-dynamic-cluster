@@ -473,7 +473,7 @@ export wlsAdminURL=$wlsAdminHost:$wlsAdminPort
 
 if [ $vmIndex -eq 0 ];
 then
-    cleanup
+    createTempFolder
     echo "check status of admin server"
     wait_for_admin
 
@@ -495,7 +495,7 @@ then
     restartCluster
     cleanup
 else
-    cleanup
+    createTempFolder
     mapLDAPHostWithPublicIP
     parseLDAPCertificate
     importAADCertificate
