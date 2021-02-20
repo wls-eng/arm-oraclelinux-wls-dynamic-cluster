@@ -170,6 +170,7 @@ jobs:
           path: ${{steps.addnode_coherence_artifact_file.outputs.addnode_coherence_artifactPath}}
 
   deploy-dependencies:
+    if: ${{!(github.event_name == 'schedule' && github.repository_owner != 'wls-eng')}}
     needs: preflight
     runs-on: ubuntu-latest
     steps:
@@ -212,6 +213,7 @@ jobs:
             --end-ip-address "0.0.0.0"
 
   deploy-weblogic-cluster:
+    if: ${{!(github.event_name == 'schedule' && github.repository_owner != 'wls-eng')}}
     needs: preflight
     runs-on: ubuntu-latest
     strategy:
@@ -742,7 +744,7 @@ jobs:
         run: |
           curl -XDELETE --user ${{ env.elkUser }}:${{ env.elkPassword }}  ${{ env.elkURI }}/azure-weblogic-dynamic-cluster-${{ github.run_id }}${{ github.run_number }}
 
-  cleanup:
+  cleanup-github-resource:
     needs: deploy-weblogic-cluster
     if: always()
     runs-on: ubuntu-latest
@@ -756,6 +758,11 @@ jobs:
           cd arm-oraclelinux-wls-dynamic-cluster
           git push https://$git_token@github.com/$userName/arm-oraclelinux-wls-dynamic-cluster.git -f --delete $testbranchName
 
+  cleanup-az-resource:
+    if: ${{!(github.event_name == 'schedule' && github.repository_owner != 'wls-eng')}}
+    needs: deploy-weblogic-cluster
+    runs-on: ubuntu-latest
+    steps:
       - uses: azure/login@v1
         id: azure-login
         with:
