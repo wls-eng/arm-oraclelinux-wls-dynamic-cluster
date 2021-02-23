@@ -315,7 +315,7 @@
                     "icon": "None",
                     "text": "Template version ${project.version}"
                 },
-                "visible": "[bool('true')]"
+                "visible": "[bool('${template.version.visible}')]"
             },
             {
                 "name": "howToReportIssues",
