@@ -418,6 +418,7 @@ function addCertficateToOracleVault()
                  echo "Successfully added JKS keystore to Oracle Wallet"
               else
                  echo_stderr "Adding JKS keystore to Oracle Wallet failed"
+                 exit 1
               fi
           else
               echo_stderr "Not a valid JKS keystore file"
