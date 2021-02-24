@@ -782,7 +782,7 @@ jobs:
   
   summary:
     needs: deploy-weblogic-cluster
-    if: always()
+    if: ${{!(github.event_name == 'schedule' && github.repository_owner != 'wls-eng')}}
     runs-on: ubuntu-latest
     steps:
       - name: summarize jobs
@@ -805,3 +805,4 @@ jobs:
                 "text":"$failed_job_num jobs failed in Dynamic Cluster Offer's workflow, please take a look at: https://github.com/wls-eng/arm-oraclelinux-wls-dynamic-cluster/actions/runs/${{ github.run_id }}"
                 }
             EOF
+            fi
