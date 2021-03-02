@@ -332,7 +332,7 @@
                                 "label": "Issue tracker",
                                 "uri": "https://aka.ms/arm-oraclelinux-wls-issues"
                             }
-                        }   
+                        }
                     },
                     {
                         "name": "howToJoinSlack",
@@ -357,7 +357,7 @@
                                 "uri": "https://aka.ms/wls-on-azure-survey"
                             }
                         }
-                    }                    
+                    }
                 ],
                 "visible": true
             }
@@ -427,6 +427,16 @@
                         "visible": "[and(steps('section_sslConfiguration').enableCustomSSL, equals(steps('section_sslConfiguration').sslConfigurationAccessOption, 'uploadConfig'))]",
                         "label": "TLS/SSL Configuration Settings",
                         "elements": [
+                            {
+                                "name": "sslKeystoreInfo0",
+                                "type": "Microsoft.Common.InfoBox",
+                                "visible": "true",
+                                "options": {
+                                    "icon": "Info",
+                                    "text": "It's not allowed to use the same keystore for identity and trust. Click the link for how to obtain and store certificates for development and production environments.",
+                                    "uri": "https://aka.ms/arm-oraclelinux-wls-ssl-configuration"
+                                }
+                            },
                             {
                                 "name": "uploadedCustomIdentityKeyStoreData",
                                 "type": "Microsoft.Common.FileUpload",
@@ -576,6 +586,16 @@
                         "visible": "[and(steps('section_sslConfiguration').enableCustomSSL, equals(steps('section_sslConfiguration').sslConfigurationAccessOption, 'keyVaultStoredConfig'))]",
                         "label": "TLS/SSL Configuration Settings",
                         "elements": [
+                            {
+                                "name": "sslKeystoreInfo",
+                                "type": "Microsoft.Common.InfoBox",
+                                "visible": "true",
+                                "options": {
+                                    "icon": "Info",
+                                    "text": "It's not allowed to use the same keystore for identity and trust. Click the link for how to obtain and store certificates for development and production environments.",
+                                    "uri": "https://aka.ms/arm-oraclelinux-wls-ssl-configuration"
+                                }
+                            },
                             {
                                 "name": "keyVaultText",
                                 "type": "Microsoft.Common.TextBlock",
