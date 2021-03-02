@@ -7,7 +7,7 @@ function echo_stderr() {
 
 #Function to display usage message
 function usage() {
-    echo_stderr "./setupCoherence.sh <wlsDomainName> <wlsUserName> <wlsPassword> <wlsServerName> <adminVMName> <oracleHome> <wlsDomainPath> <storageAccountName> <storageAccountKey> <mountpointPath> <enableWebLocalStorage> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <managedServerPrefix> <serverIndex>"
+    echo_stderr "./setupCoherence.sh <wlsDomainName> <wlsUserName> <wlsPassword> <wlsServerName> <adminVMName> <oracleHome> <wlsDomainPath> <storageAccountName> <storageAccountKey> <mountpointPath> <enableWebLocalStorage> <enableELK> <elasticURI> <elasticUserName> <elasticPassword> <logsToIntegrate> <logIndex> <managedServerPrefix> <serverIndex> <isCustomSSLEnabled> [<customIdentityKeyStoreData> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreData> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <serverPrivateKeyAlias <serverPrivateKeyPassPhrase>]"
 }
 
 function installUtilities() {
@@ -101,6 +101,23 @@ function validateInput() {
 
     if [ -z "$managedServerPrefix" ]; then
         echo_stderr "managedServerPrefix is required. "
+    fi
+
+    if [ "${isCustomSSLEnabled}" != "true" ];
+    then
+        echo_stderr "Custom SSL value is not provided. Defaulting to false"
+        isCustomSSLEnabled="false"
+    else
+        if   [ -z "$customIdentityKeyStoreData" ]    || [ -z "$customIdentityKeyStorePassPhrase" ] ||
+             [ -z "$customIdentityKeyStoreType" ]    || [ -z "$customTrustKeyStoreData" ] ||
+             [ -z "$customTrustKeyStorePassPhrase" ] || [ -z "$customTrustKeyStoreType" ] ||
+             [ -z "$serverPrivateKeyAlias" ]         || [ -z "$serverPrivateKeyPassPhrase" ];
+        then
+            echo "One of the required values for enabling Custom SSL \
+            (CustomKeyIdentityKeyStoreData,CustomKeyIdentityKeyStorePassPhrase,CustomKeyIdentityKeyStoreType,CustomKeyTrustKeyStoreData,CustomKeyTrustKeyStorePassPhrase,CustomKeyTrustKeyStoreType) \
+            has not been provided."
+            exit 1
+        fi
     fi
 }
 
@@ -288,6 +305,20 @@ function createNodeManagerService() {
         echo "Warning : Failed in setting option CrashRecoveryEnabled=true. Continuing without the option."
         mv $wlsDomainPath/nodemanager/nodemanager.properties.bak $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
     fi
+
+    if [ "${isCustomSSLEnabled}" == "true" ];
+    then
+        echo "KeyStores=CustomIdentityAndCustomTrust" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomIdentityKeystoreType=${customIdentityKeyStoreType}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomIdentityKeyStoreFileName=${customIdentityKeyStoreFileName}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomIdentityKeyStorePassPhrase=${customIdentityKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomIdentityAlias=${serverPrivateKeyAlias}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomIdentityPrivateKeyPassPhrase=${customIdentityKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomTrustKeystoreType=${customTrustKeyStoreType}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomTrustKeyStoreFileName=${customTrustKeyStoreFileName}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomTrustKeyStorePassPhrase=${customTrustKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+    fi
+
     sudo chown -R $username:$groupname $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties*
     echo "Creating NodeManager service"
     # Added waiting for network-online service and restart service
@@ -463,6 +494,37 @@ function getSerializedSystemIniFileFromShare() {
     runuser -l oracle -c "chmod 640 ${wlsDomainPath}/${wlsDomainName}/security/SerializedSystemIni.dat"
 }
 
+function storeCustomSSLCerts()
+{
+    if [ "${isCustomSSLEnabled}" == "true" ];
+    then
+
+        mkdir -p $KEYSTORE_PATH
+
+        echo "Custom SSL is enabled. Storing CertInfo as files..."
+        export customIdentityKeyStoreFileName="$KEYSTORE_PATH/identity.keystore"
+        export customTrustKeyStoreFileName="$KEYSTORE_PATH/trust.keystore"
+
+        customIdentityKeyStoreData=$(echo "$customIdentityKeyStoreData" | base64 --decode)
+        customIdentityKeyStorePassPhrase=$(echo "$customIdentityKeyStorePassPhrase" | base64 --decode)
+        customIdentityKeyStoreType=$(echo "$customIdentityKeyStoreType" | base64 --decode)
+
+        customTrustKeyStoreData=$(echo "$customTrustKeyStoreData" | base64 --decode)
+        customTrustKeyStorePassPhrase=$(echo "$customTrustKeyStorePassPhrase" | base64 --decode)
+        customTrustKeyStoreType=$(echo "$customTrustKeyStoreType" | base64 --decode)
+
+        serverPrivateKeyAlias=$(echo "$serverPrivateKeyAlias" | base64 --decode)
+        serverPrivateKeyPassPhrase=$(echo "$serverPrivateKeyPassPhrase" | base64 --decode)
+
+        #decode cert data once again as it would got base64 encoded while  storing in azure keyvault
+        echo "$customIdentityKeyStoreData" | base64 --decode > $customIdentityKeyStoreFileName
+        echo "$customTrustKeyStoreData" | base64 --decode > $customTrustKeyStoreFileName
+
+    else
+        echo "Custom SSL is not enabled"
+    fi
+}
+
 # main script starts from here
 
 export SCRIPT_PWD=$(pwd)
@@ -478,7 +540,7 @@ for ((i = 0; i < $ELEMENTS; i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -ne 18 ]; then
+if [ $# -lt 19 ]; then
     usage
     exit 1
 fi
@@ -502,6 +564,25 @@ export logIndex=${16}
 export managedServerPrefix=${17}
 export serverIndex=${18}
 
+export isCustomSSLEnabled="${19}"
+isCustomSSLEnabled="${isCustomSSLEnabled,,}"
+
+#case insensitive check
+if [ "${isCustomSSLEnabled}" == "true" ];
+then
+    echo "custom ssl enabled. Reading keystore information"
+    export customIdentityKeyStoreData="${20}"
+    export customIdentityKeyStorePassPhrase="${21}"
+    export customIdentityKeyStoreType="${22}"
+    export customTrustKeyStoreData="${23}"
+    export customTrustKeyStorePassPhrase="${24}"
+    export customTrustKeyStoreType="${25}"
+    export serverPrivateKeyAlias="${26}"
+    export serverPrivateKeyPassPhrase="${27}"
+else
+    isCustomSSLEnabled="false"
+fi
+
 export clientClusterName="cluster1"
 export coherenceClusterName="myCoherence"
 export coherenceListenPort=7574
@@ -518,6 +599,7 @@ export wlsAdminT3ChannelPort=7005
 export wlsAdminURL="${adminVMName}:${wlsAdminT3ChannelPort}"
 export wlsCoherenceUnicastPortRange="-Dcoherence.localport=$coherenceLocalport -Dcoherence.localport.adjust=$coherenceLocalportAdjust"
 export wlsServerTemplate="myServerTemplate"
+export KEYSTORE_PATH="${wlsDomainPath}/${wlsDomainName}/keystores"
 
 if [ ${serverIndex} -eq 0 ]; then
     wlsServerName="admin"
@@ -537,6 +619,7 @@ else
     openPortsForCoherence
     updateNetworkRules
     createManagedSetup
+    storeCustomSSLCerts
     createNodeManagerService
     enabledAndStartNodeManagerService
     startManagedServer
