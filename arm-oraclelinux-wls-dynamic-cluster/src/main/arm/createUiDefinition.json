@@ -1265,8 +1265,7 @@
                                             "message": "Subdomain must be between 2 and 34 labels. For example, \"applications.contoso.com\" has 3 labels."
                                         }
                                     ]
-                                },
-                                "visible": "[and(bool(steps('section_ohs').enableOHS), bool(steps('section_dnsConfiguration').enableCustomDNS))]"
+                                }
                             },
                             {
                                 "name": "infoDNSIndentity",
