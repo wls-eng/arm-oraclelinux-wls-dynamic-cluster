@@ -921,7 +921,7 @@
                             "password": "Oracle Vault Password",
                             "confirmPassword": "Confirm password"
                         },
-                        "toolTip": "Oracle Vault password",
+                        "toolTip": "The password to configure SSL store Oracle Vault",
                         "constraints": {
                             "required": true,
                             "regex": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)[A-Za-z\\d]{12,}$",
