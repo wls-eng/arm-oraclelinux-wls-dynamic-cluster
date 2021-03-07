@@ -541,6 +541,14 @@ function importAADCertificateIntoWLSCustomTrustKeyStore()
         # set java home
         . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
 
+        #validate Trust keystore
+        runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; keytool -list -v -keystore $customSSLTrustKeyStoreFile -storepass $customTrustKeyStorePassPhrase -storetype $customTrustKeyStoreType | grep 'Entry type:' | grep 'trustedCertEntry'"
+
+        if [[ $? != 0 ]]; then
+            echo "Error : Trust Keystore Validation Failed !!"
+            exit 1
+        fi
+
         # For SSL enabled causes AAD failure #225
         # ISSUE: https://github.com/wls-eng/arm-oraclelinux-wls/issues/225
 
@@ -550,6 +558,29 @@ function importAADCertificateIntoWLSCustomTrustKeyStore()
     else
         echo "customSSL not enabled. Not required to configure AAD for WebLogic Custom SSL"
     fi
+}
+
+function validateSSLKeyStores()
+{
+   sudo chown -R $username:$groupname $KEYSTORE_PATH
+
+   #validate identity keystore
+   runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; keytool -list -v -keystore $customSSLIdentityKeyStoreFile -storepass $customIdentityKeyStorePassPhrase -storetype $customIdentityKeyStoreType | grep 'Entry type:' | grep 'PrivateKeyEntry'"
+
+   if [[ $? != 0 ]]; then
+       echo "Error : Identity Keystore Validation Failed !!"
+       exit 1
+   fi
+
+   #validate Trust keystore
+   runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; keytool -list -v -keystore $customSSLTrustKeyStoreFile -storepass $customTrustKeyStorePassPhrase -storetype $customTrustKeyStoreType | grep 'Entry type:' | grep 'trustedCertEntry'"
+
+   if [[ $? != 0 ]]; then
+       echo "Error : Trust Keystore Validation Failed !!"
+       exit 1
+   fi
+
+   echo "ValidateSSLKeyStores Successfull !!"
 }
 
 function parseAndSaveCustomSSLKeyStoreData()
@@ -623,14 +654,17 @@ export maxDynamicClusterSize=${23}
 export isCustomSSLEnabled="${24}"
 isCustomSSLEnabled="${isCustomSSLEnabled,,}"
 
-export customIdentityKeyStoreBase64String="${25}"
-export customIdentityKeyStorePassPhrase="${26}"
-export customIdentityKeyStoreType="${27}"
-export customTrustKeyStoreBase64String="${28}"
-export customTrustKeyStorePassPhrase="${29}"
-export customTrustKeyStoreType="${30}"
-export privateKeyAlias="${31}"
-export privateKeyPassPhrase="${32}"
+if [ "${isCustomSSLEnabled,,}" == "true" ];
+then
+    export customIdentityKeyStoreBase64String="${25}"
+    export customIdentityKeyStorePassPhrase="${26}"
+    export customIdentityKeyStoreType="${27}"
+    export customTrustKeyStoreBase64String="${28}"
+    export customTrustKeyStorePassPhrase="${29}"
+    export customTrustKeyStoreType="${30}"
+    export privateKeyAlias="${31}"
+    export privateKeyPassPhrase="${32}"
+fi
 
 export enableAAD="false"
 
