@@ -313,7 +313,7 @@ function createNodeManagerService() {
         echo "CustomIdentityKeyStoreFileName=${customIdentityKeyStoreFileName}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomIdentityKeyStorePassPhrase=${customIdentityKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomIdentityAlias=${serverPrivateKeyAlias}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
-        echo "CustomIdentityPrivateKeyPassPhrase=${customIdentityKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        echo "CustomIdentityPrivateKeyPassPhrase=${serverPrivateKeyPassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomTrustKeystoreType=${customTrustKeyStoreType}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomTrustKeyStoreFileName=${customTrustKeyStoreFileName}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomTrustKeyStorePassPhrase=${customTrustKeyStorePassPhrase}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
