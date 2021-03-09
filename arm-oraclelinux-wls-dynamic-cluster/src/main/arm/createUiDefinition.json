@@ -703,8 +703,8 @@
                                 "toolTip": "Use only letters and numbers",
                                 "constraints": {
                                     "required": true,
-                                    "regex": "^.{6,}$",
-                                    "validationMessage": "Keypass must be at least 6 characters long."
+                                    "regex": "^[a-z0-9A-Z]{1,30}$",
+                                    "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
                                 }
                             },
                             {
