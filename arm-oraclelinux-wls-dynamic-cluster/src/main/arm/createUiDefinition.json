@@ -477,7 +477,7 @@
                                 "visible": "true",
                                 "label": "The Identity KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -563,7 +563,7 @@
                                 "visible": "true",
                                 "label": "The Trust KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -666,7 +666,7 @@
                                 "visible": "true",
                                 "label": "The Identity KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -739,7 +739,7 @@
                                 "visible": "true",
                                 "label": "The Trust KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -999,7 +999,7 @@
                                 "visible": "true",
                                 "label": "Type of the certificate format(JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -1027,7 +1027,7 @@
                                 "type": "Microsoft.Common.DropDown",
                                 "label": "Certificate Type",
                                 "defaultValue": "JKS",
-                                "toolTip": "Type of the certificate format",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
