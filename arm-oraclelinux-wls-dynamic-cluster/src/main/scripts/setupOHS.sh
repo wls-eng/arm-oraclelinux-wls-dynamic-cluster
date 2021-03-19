@@ -316,7 +316,9 @@ function getWLSClusterAddress()
         exit 1
     fi
     # Default admin URL is "defaultURL": "t3:\/\/10.0.0.6:7001" which is not required as part of cluster address
-    msString=` cat out | grep defaultURL | grep -v "7001\|7005" | cut -f3 -d"/" `
+    # Exclude 7001 admin port, 7005 admin channel port
+    # Exclude coherence server listen port 7501
+    msString=` cat out | grep defaultURL | grep -v "7001\|7005\|7501" | cut -f3 -d"/" `
     wlsClusterAddress=`echo $msString | sed 's/\" /,/g'`
     export WLS_CLUSTER_ADDRESS=${wlsClusterAddress::-1}
   
