@@ -317,6 +317,10 @@ EOF
 #This function create py Script to create Machine on the Domain
 function createMachinePyScript()
 {
+
+# Exclusive lock is used for startEdit, without that intermittently it is noticed that deployment fails
+# Refer issue https://github.com/wls-eng/arm-oraclelinux-wls/issues/280
+
     echo "Creating machine name model: $machineName"
     cat <<EOF >$DOMAIN_PATH/add-machine.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
@@ -326,8 +330,8 @@ try:
 except Exception, e:
     print e
 
-edit("$machineName")
-startEdit()
+edit()
+startEdit(60000,60000,'true')
 cd('/')
 cmo.createMachine('$machineName')
 cd('/Machines/$machineName/NodeManager/$machineName')
@@ -335,9 +339,7 @@ cmo.setListenPort(int($nmPort))
 cmo.setListenAddress('$nmHost')
 cmo.setNMType('ssl')
 save()
-resolve()
 activate()
-destroyEditSession("$machineName")
 disconnect()
 EOF
 }
