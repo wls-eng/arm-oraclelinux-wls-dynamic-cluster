@@ -115,8 +115,6 @@ function cleanup()
     echo "Cleaning up temporary files..."
     rm -rf $DOMAIN_PATH/admin-domain.yaml
     rm -rf $DOMAIN_PATH/managed-domain.yaml
-    rm -rf $DOMAIN_PATH/weblogic-deploy.zip
-    rm -rf $DOMAIN_PATH/weblogic-deploy
     rm -rf $DOMAIN_PATH/deploy-app.yaml
     rm -rf $DOMAIN_PATH/shoppingcart.zip
     rm -rf $DOMAIN_PATH/*.py
@@ -364,20 +362,20 @@ function create_adminSetup()
     echo "Creating domain path $DOMAIN_PATH"
  
     sudo mkdir -p $DOMAIN_PATH 
-    sudo rm -rf $DOMAIN_PATH/*
 
-    echo "Downloading weblogic-deploy-tool"
     cd $DOMAIN_PATH
-    wget -q $WEBLOGIC_DEPLOY_TOOL  
-    if [[ $? != 0 ]]; then
-       echo "Error : Downloading weblogic-deploy-tool failed"
-       exit 1
+    
+    # WebLogic base images are already having weblogic-deploy, hence no need to download
+    if [ ! -d "$DOMAIN_PATH/weblogic-deploy" ];
+    then
+        echo "weblogic-deploy tool not found in path $DOMAIN_PATH"
+        exit 1
     fi
-    sudo unzip -o weblogic-deploy.zip -d $DOMAIN_PATH
 
     storeCustomSSLCerts
 
     create_admin_model
+    
     sudo chown -R $username:$groupname $DOMAIN_PATH
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; $DOMAIN_PATH/weblogic-deploy/bin/createDomain.sh -oracle_home $oracleHome -domain_parent $DOMAIN_PATH  -domain_type WLS -model_file $DOMAIN_PATH/admin-domain.yaml" 
     if [[ $? != 0 ]]; then
@@ -473,17 +471,16 @@ function create_managedSetup(){
     echo "Creating domain path /u01/domains"
     DOMAIN_PATH="/u01/domains" 
     sudo mkdir -p $DOMAIN_PATH 
-    sudo rm -rf $DOMAIN_PATH/*
 
-    echo "Downloading weblogic-deploy-tool"
     cd $DOMAIN_PATH
-    wget -q $WEBLOGIC_DEPLOY_TOOL  
-    if [[ $? != 0 ]]; then
-       echo "Error : Downloading weblogic-deploy-tool failed"
-       exit 1
+	
+    # WebLogic base images are already having weblogic-deploy, hence no need to download
+    if [ ! -d "$DOMAIN_PATH/weblogic-deploy" ];
+    then
+        echo "weblogic-deploy tool not found in path $DOMAIN_PATH"
+        exit 1
     fi
-    sudo unzip -o weblogic-deploy.zip -d $DOMAIN_PATH
-
+    
     storeCustomSSLCerts
 
     echo "Creating managed server model files"
@@ -889,7 +886,6 @@ export nmHost=`hostname`
 export nmPort=5556
 export machineNamePrefix="machine"
 export machineName="$machineNamePrefix-$nmHost"
-export WEBLOGIC_DEPLOY_TOOL=https://github.com/oracle/weblogic-deploy-tooling/releases/download/weblogic-deploy-tooling-1.8.1/weblogic-deploy.zip
 export username="oracle"
 export groupname="oracle"
 
